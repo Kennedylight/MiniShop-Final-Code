@@ -1,0 +1,85 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // Champs sensibles : seules les Cloud Functions (admin SDK, qui contournent
+    // ces règles) peuvent les modifier. Un client ne peut jamais les changer.
+    function subscriptionFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny([
+          'subscriptionStatus', 'plan', 'trialEndsAt',
+          'stripeCustomerId', 'stripeSubscriptionId', 'accountStatus'
+        ]);
+    }
+
+    // ── owners ────────────────────────────────────────────────
+    match /owners/{ownerId} {
+      // Lecture publique : nécessaire à la vitrine (recherche par slug) et à l'admin.
+      allow read: if true;
+
+      // Création de SON propre doc. On borne ce que le client peut s'attribuer :
+      //  - soit 'inactive' (inscription mobile classique),
+      //  - soit l'essai gratuit web : 'trialing' + 'business' + fin ≤ ~3 jours.
+      // Impossible de s'auto-attribuer 'active' ou un essai lointain.
+      allow create: if isSignedIn()
+        && request.auth.uid == ownerId
+        && request.resource.data.accountStatus == 'active'
+        && !('stripeCustomerId' in request.resource.data)
+        && !('stripeSubscriptionId' in request.resource.data)
+        && (
+          request.resource.data.subscriptionStatus == 'inactive'
+          || (
+            request.resource.data.subscriptionStatus == 'trialing'
+            && request.resource.data.plan == 'business'
+            && request.resource.data.trialEndsAt is number
+            && request.resource.data.trialEndsAt
+                 <= request.time.toMillis() + (4 * 24 * 60 * 60 * 1000)
+          )
+        );
+
+      // Mise à jour de SON profil uniquement, sans toucher aux champs d'abonnement.
+      allow update: if isSignedIn()
+        && request.auth.uid == ownerId
+        && subscriptionFieldsUnchanged();
+
+      allow delete: if false;
+    }
+
+    // ── products ──────────────────────────────────────────────
+    match /products/{productId} {
+      // Catalogue public (vitrine).
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── orders ────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // Le client (acheteur, non authentifié) crée une commande au checkout.
+      allow create: if request.resource.data.status == 'new'
+        && request.resource.data.ownerId is string;
+
+      // Lecture réservée au commerçant propriétaire (ses commandes) ou à un admin.
+      allow get, list: if isAdmin()
+        || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+
+      // Le commerçant met à jour le statut de SES commandes.
+      allow update: if isSignedIn()
+        && resource.data.ownerId == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    // Tout le reste est refusé par défaut.
+  }
+}

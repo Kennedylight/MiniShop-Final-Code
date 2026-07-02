@@ -11,6 +11,19 @@ import {
 } from 'firebase/firestore';
 import { Order, OrderStatus } from '@/types/Order';
 
+export function subscribeToOrder(orderId: string, cb: (order: Order | null) => void) {
+  return onSnapshot(
+    doc(db, 'orders', orderId),
+    snap => {
+      cb(snap.exists() ? ({ orderId: snap.id, ...snap.data() } as Order) : null);
+    },
+    error => {
+      console.log('subscribeToOrder Firestore error:', error);
+      cb(null);
+    }
+  );
+}
+
 export async function createOrder(
   input: Omit<Order, 'orderId' | 'status' | 'createdAt' | 'updatedAt'>
 ) {

@@ -2,20 +2,23 @@ import { useEffect, useState } from 'react';
 import { Alert, Text, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { auth } from '@/services/firebase';
-import { getCurrentOwner } from '@/services/authService';
+import { getCurrentOwner, updateOwnerCurrency } from '@/services/authService';
 import { addProduct, deleteProduct, listOwnerProducts, updateProduct, uploadProductImage } from '@/services/productService';
 import { Product } from '@/types/Product';
 import { PlanId, getPhotoLimit } from '@/constants/plans';
+import { DEFAULT_CURRENCY } from '@/constants/currency';
 import { Screen } from '@/components/Screen';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { ProductCard } from '@/components/ProductCard';
+import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { Colors } from '@/constants/colors';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [desc, setDesc] = useState('');
   const [image, setImage] = useState<string | undefined>();
   const [plan, setPlan] = useState<PlanId>('starter');
@@ -27,6 +30,7 @@ export default function Products() {
     if (!uid) return;
     const owner = await getCurrentOwner(uid);
     setPlan((owner?.plan as PlanId) || 'starter');
+    setCurrency(owner?.currency || DEFAULT_CURRENCY);
     setProducts(await listOwnerProducts(uid));
   };
 
@@ -43,6 +47,7 @@ export default function Products() {
     setEditingId(p.productId);
     setName(p.name);
     setPrice(String(p.price));
+    if (p.currency) setCurrency(p.currency);
     setDesc(p.description ?? '');
     setImage(p.imageUrl);
   };
@@ -54,10 +59,11 @@ export default function Products() {
       if (image && !image.startsWith('http')) imageUrl = await uploadProductImage(uid, image);
 
       if (editingId) {
-        await updateProduct(editingId, { name, price: Number(price), description: desc, imageUrl });
+        await updateProduct(editingId, { name, price: Number(price), currency, description: desc, imageUrl });
       } else {
-        await addProduct(uid, plan, { name, price: Number(price), description: desc, imageUrl, isAvailable: true });
+        await addProduct(uid, plan, { name, price: Number(price), currency, description: desc, imageUrl, isAvailable: true });
       }
+      await updateOwnerCurrency(uid, currency).catch(() => undefined);
       clearForm();
       await load();
     } catch (e: any) {
@@ -83,7 +89,8 @@ export default function Products() {
       <Text style={styles.sub}>{products.length}/{limit} photos used. MiniShop maximum is 15.</Text>
 
       <Input placeholder="Product name" value={name} onChangeText={setName} />
-      <Input placeholder="Price" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
+      <CurrencyPicker value={currency} onChange={setCurrency} />
+      <Input placeholder={`Price (${currency})`} keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
       <Input placeholder="Description" value={desc} onChangeText={setDesc} />
       <View style={{ gap: 10 }}>
         <Button title={image ? 'Photo selected' : 'Choose Photo'} onPress={pick} variant="outline" />

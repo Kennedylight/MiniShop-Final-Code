@@ -3,12 +3,13 @@ import { Product } from '@/types/Product';
 import { Card } from './Card';
 import { Button } from './Button';
 import { Colors } from '@/constants/colors';
+import { formatPrice } from '@/constants/currency';
 export function ProductCard({ product, onAdd }: { product: Product; onAdd?: () => void }) {
   return <Card style={styles.card}>
     {product.imageUrl ? <Image source={{ uri: product.imageUrl }} style={styles.image} /> : <View style={[styles.image, styles.placeholder]}><Text>Photo</Text></View>}
     <Text style={styles.name}>{product.name}</Text>
     <Text style={styles.desc}>{product.description}</Text>
-    <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+    <Text style={styles.price}>{formatPrice(product.price, product.currency)}</Text>
     {onAdd && <Button title="Add to Cart" onPress={onAdd} />}
   </Card>;
 }

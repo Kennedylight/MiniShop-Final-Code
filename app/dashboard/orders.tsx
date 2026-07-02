@@ -7,6 +7,7 @@ import { Screen } from '@/components/Screen';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Colors } from '@/constants/colors';
+import { formatPrice } from '@/constants/currency';
 
 const STATUS_ORDER: OrderStatus[] = ['new', 'confirmed', 'in_process', 'ready', 'out_for_delivery', 'completed'];
 
@@ -30,7 +31,7 @@ export default function Orders() {
         <Card key={o.orderId}>
           <Text style={styles.order}>#{o.orderId.slice(0, 6)} • {o.customerName}</Text>
           <Text style={styles.text}>{o.customerPhone} • {o.deliveryAddress}</Text>
-          <Text style={styles.text}>${o.estimatedTotal.toFixed(2)} • {o.status.replaceAll('_', ' ')}</Text>
+          <Text style={styles.text}>{formatPrice(o.estimatedTotal, o.currency)} • {o.status.replaceAll('_', ' ')}</Text>
           {o.items.map(i => <Text key={i.productId}>{i.quantity}x {i.name}</Text>)}
           <View style={{ height: 10 }} />
           {nextStatuses(o.status).map(s => (

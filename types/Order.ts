@@ -4,6 +4,7 @@ export type OrderItem = {
   productId: string;
   name: string;
   price: number;
+  currency?: string;
   quantity: number;
   imageUrl?: string;
 };
@@ -19,6 +20,7 @@ export type Order = {
   notes?: string;
   items: OrderItem[];
   estimatedTotal: number;
+  currency?: string;
   status: OrderStatus;
   createdAt: number;
   updatedAt: number;

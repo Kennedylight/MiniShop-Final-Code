@@ -44,3 +44,7 @@ export async function getCurrentOwner(ownerId: string) {
   const snap = await getDoc(doc(db, 'owners', ownerId));
   return snap.exists() ? (snap.data() as Owner) : null;
 }
+
+export async function updateOwnerCurrency(ownerId: string, currency: string) {
+  return setDoc(doc(db, 'owners', ownerId), { currency, updatedAt: Date.now() }, { merge: true });
+}

@@ -69,8 +69,11 @@ service cloud.firestore {
       allow create: if request.resource.data.status == 'new'
         && request.resource.data.ownerId is string;
 
-      // Lecture réservée au commerçant propriétaire (ses commandes) ou à un admin.
-      allow get, list: if isAdmin()
+      // Lecture d'une commande précise : autorisée publiquement (suivi de commande
+      // par le client, non authentifié, qui connaît l'orderId). La liste complète
+      // reste réservée au commerçant propriétaire ou à un admin.
+      allow get: if true;
+      allow list: if isAdmin()
         || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 
       // Le commerçant met à jour le statut de SES commandes.

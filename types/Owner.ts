@@ -25,6 +25,7 @@ export type Owner = {
   deliveryInfo?: string;
   orderInstructions?: string;
   plan?: PlanId;
+  currency?: string;
   subscriptionStatus: SubscriptionStatus;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;

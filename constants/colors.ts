@@ -13,5 +13,6 @@ export const Colors = {
   muted: '#68748A',
   danger: '#DC2626',
   success: '#16A34A',
-  border: '#E5EAF2'
+  border: '#E5EAF2',
+  background: '#F7F9FC',
 };

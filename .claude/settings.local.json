@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm test *)",
+      "Bash(python \"C:/Users/nanfa/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"small business commerce SaaS storefront West Africa WhatsApp marketplace warm editorial\" --design-system -p \"MiniShop\" -f markdown)",
+      "mcp__magic__21st_magic_component_inspiration"
+    ]
+  }
+}

@@ -46,9 +46,11 @@ service cloud.firestore {
         );
 
       // Mise à jour de SON profil uniquement, sans toucher aux champs d'abonnement.
-      allow update: if isSignedIn()
-        && request.auth.uid == ownerId
-        && subscriptionFieldsUnchanged();
+      // Exception : un super-admin peut modifier n'importe quel champ (activation manuelle).
+      allow update: if isAdmin()
+        || (isSignedIn()
+          && request.auth.uid == ownerId
+          && subscriptionFieldsUnchanged());
 
       allow delete: if false;
     }

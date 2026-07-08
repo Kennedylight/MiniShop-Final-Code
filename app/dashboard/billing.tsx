@@ -1,8 +1,201 @@
-import { Alert, Linking, Text, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
-import { Screen } from '@/components/Screen';
-import { Button } from '@/components/Button';
-import { createCustomerPortal } from '@/services/subscriptionService';
-import { Colors } from '@/constants/colors';
-export default function Billing(){ const portal=async()=>{try{const url=await createCustomerPortal(); await Linking.openURL(url);}catch(e:any){Alert.alert('Billing',e.message)}}; return <Screen><Text style={styles.title}>Billing</Text><Text style={styles.text}>Your subscription controls your product photo limit and dashboard access.</Text><Button title="Choose / Upgrade Plan" onPress={()=>router.push('/pricing')}/><Button title="Manage Billing" onPress={portal} variant="outline"/></Screen> }
-const styles=StyleSheet.create({title:{fontSize:32,fontWeight:'900',color:Colors.text},text:{color:Colors.muted,fontSize:16,lineHeight:24}});
+import { useEffect, useState } from "react";
+import { Alert, Linking, Text, View, StyleSheet, Pressable, ActivityIndicator } from "react-native";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Screen } from "@/components/Screen";
+import { Button } from "@/components/Button";
+import { createCustomerPortal } from "@/services/subscriptionService";
+import { getCurrentOwner } from "@/services/authService";
+import { auth } from "@/services/firebase";
+import { PlanId, getPhotoLimit } from "@/constants/plans";
+import { Colors } from "@/constants/colors";
+
+const PLAN_LABELS: Record<string, string> = {
+  starter: "Starter",
+  business: "Business",
+  premium: "Premium",
+};
+
+export default function Billing() {
+  const [plan, setPlan] = useState<PlanId | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) {
+        setLoadingPlan(false);
+        return;
+      }
+      const owner = await getCurrentOwner(uid);
+      setPlan((owner?.plan as PlanId) || "starter");
+      setLoadingPlan(false);
+    })();
+  }, []);
+
+  const portal = async () => {
+    try {
+      setPortalLoading(true);
+      const url = await createCustomerPortal();
+      await Linking.openURL(url);
+    } catch (e: any) {
+      Alert.alert("Billing", e.message);
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const limit = plan ? getPhotoLimit(plan) : null;
+
+  return (
+    <Screen>
+      <View style={styles.header}>
+        <Text style={styles.title}>Billing</Text>
+        <Text style={styles.subtitle}>
+          Manage your subscription and payment details
+        </Text>
+      </View>
+
+      {/* Current plan card */}
+      <View style={styles.planCard}>
+        <View style={styles.planTop}>
+          <View>
+            <Text style={styles.planLabel}>Current plan</Text>
+            {loadingPlan ? (
+              <ActivityIndicator size="small" color="#fff" style={{ marginTop: 6 }} />
+            ) : (
+              <Text style={styles.planName}>
+                {plan ? PLAN_LABELS[plan] ?? plan : "—"}
+              </Text>
+            )}
+          </View>
+          <View style={styles.planIconWrap}>
+            <Ionicons name="diamond-outline" size={22} color="#fff" />
+          </View>
+        </View>
+
+        {limit != null && (
+          <View style={styles.planFeature}>
+            <Ionicons name="images-outline" size={15} color="rgba(255,255,255,0.85)" />
+            <Text style={styles.planFeatureText}>Up to {limit} product photos</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Actions */}
+      <Text style={styles.sectionLabel}>Manage</Text>
+
+      <Pressable
+        onPress={() => router.push("/pricing")}
+        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      >
+        <View style={[styles.rowIconWrap, { backgroundColor: Colors.primary ?? "#22c55e" }]}>
+          <Ionicons name="trending-up-outline" size={18} color="#fff" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.rowTitle}>Change plan</Text>
+          <Text style={styles.rowSubtitle}>Upgrade or downgrade anytime</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
+      </Pressable>
+
+      <Pressable
+        onPress={portal}
+        disabled={portalLoading}
+        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      >
+        <View style={[styles.rowIconWrap, { backgroundColor: Colors.card ?? "#f5f5f7" }]}>
+          {portalLoading ? (
+            <ActivityIndicator size="small" color={Colors.text} />
+          ) : (
+            <Ionicons name="card-outline" size={18} color={Colors.text} />
+          )}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.rowTitle}>Payment & invoices</Text>
+          <Text style={styles.rowSubtitle}>Update card, view invoice history</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
+      </Pressable>
+    </Screen>
+  );
+}
+
+const RADIUS = 18;
+
+const styles = StyleSheet.create({
+  header: { marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: "800", color: Colors.text, letterSpacing: -0.3 },
+  subtitle: { fontSize: 14, color: Colors.muted, marginTop: 4 },
+  planCard: {
+    backgroundColor: Colors.text ?? "#111",
+    borderRadius: RADIUS,
+    padding: 18,
+    marginBottom: 24,
+  },
+  planTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  planLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.7)",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  planName: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#fff",
+    marginTop: 4,
+  },
+  planIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  planFeature: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 16,
+  },
+  planFeatureText: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
+    fontWeight: "600",
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: Colors.muted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: Colors.card ?? "#f5f5f7",
+    borderRadius: RADIUS,
+    padding: 14,
+    marginBottom: 10,
+  },
+  rowIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowTitle: { fontSize: 15, fontWeight: "700", color: Colors.text },
+  rowSubtitle: { fontSize: 12, color: Colors.muted, marginTop: 1 },
+  pressed: { opacity: 0.7 },
+});

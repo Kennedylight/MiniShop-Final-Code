@@ -47,6 +47,71 @@ async function getUidFromAuthHeader(req: any) {
  * Idempotent (onCreate ne se déclenche qu'une fois) ; n'écrase jamais un
  * abonnement déjà actif.
  */
+/**
+ * Pose la custom claim { admin: true } sur un compte Firebase Auth.
+ * Appelable uniquement par un compte déjà admin (ou en premier boot via
+ * la console Firebase → Extensions → Run function).
+ * Usage : POST avec Authorization: Bearer <token> et body { targetUid: "..." }
+ */
+export const setAdminClaim = onRequest({ invoker: "public" }, (req, res) =>
+  allowCors(req, res, async () => {
+    try {
+      if (req.method !== "POST")
+        return res.status(405).json({ error: "Method not allowed" });
+
+      // Vérifie que l'appelant est lui-même admin
+      const callerUid = await getUidFromAuthHeader(req);
+      const callerToken = await admin.auth().getUser(callerUid);
+      const isCallerAdmin = callerToken.customClaims?.admin === true;
+
+      // Bootstrap : si aucun admin n'existe encore, autorise la première pose
+      const { targetUid, bootstrapSecret } = req.body;
+      const validBootstrap =
+        process.env.ADMIN_BOOTSTRAP_SECRET &&
+        bootstrapSecret === process.env.ADMIN_BOOTSTRAP_SECRET;
+
+      if (!isCallerAdmin && !validBootstrap)
+        return res.status(403).json({ error: "Forbidden" });
+
+      if (!targetUid || typeof targetUid !== "string")
+        return res.status(400).json({ error: "targetUid required" });
+
+      await admin.auth().setCustomUserClaims(targetUid, { admin: true });
+      console.log(`[setAdminClaim] admin claim set on ${targetUid}`);
+      return res.json({ ok: true, uid: targetUid });
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
+    }
+  }),
+);
+
+/**
+ * Révoque la custom claim admin d'un utilisateur.
+ */
+export const revokeAdminClaim = onRequest({ invoker: "public" }, (req, res) =>
+  allowCors(req, res, async () => {
+    try {
+      if (req.method !== "POST")
+        return res.status(405).json({ error: "Method not allowed" });
+
+      const callerUid = await getUidFromAuthHeader(req);
+      const callerToken = await admin.auth().getUser(callerUid);
+      if (callerToken.customClaims?.admin !== true)
+        return res.status(403).json({ error: "Forbidden" });
+
+      const { targetUid } = req.body;
+      if (!targetUid || typeof targetUid !== "string")
+        return res.status(400).json({ error: "targetUid required" });
+
+      await admin.auth().setCustomUserClaims(targetUid, { admin: false });
+      console.log(`[revokeAdminClaim] admin claim revoked on ${targetUid}`);
+      return res.json({ ok: true, uid: targetUid });
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
+    }
+  }),
+);
+
 export const grantTrialOnOwnerCreate = onDocumentCreated(
   "owners/{ownerId}",
   async (event) => {
@@ -255,17 +320,23 @@ export const stripeWebhook = onRequest({ invoker: "public" }, async (req, res) =
       if (ownerSnap.empty) {
         console.warn(`[stripeWebhook] no owner for customer ${sub.customer}`);
       } else {
-        await ownerSnap.docs[0].ref.set(
-          {
-            subscriptionStatus: sub.status,
-            stripeSubscriptionId: sub.id,
-            updatedAt: Date.now(),
-          },
-          { merge: true },
-        );
-        console.log(
-          `[stripeWebhook] owner ${ownerSnap.docs[0].id} status → ${sub.status}`,
-        );
+        const ownerDoc = ownerSnap.docs[0];
+        // Ne pas écraser un plan activé manuellement par un admin.
+        if (ownerDoc.data().manualPlan === true) {
+          console.log(`[stripeWebhook] skipping manual plan owner ${ownerDoc.id}`);
+        } else {
+          await ownerDoc.ref.set(
+            {
+              subscriptionStatus: sub.status,
+              stripeSubscriptionId: sub.id,
+              updatedAt: Date.now(),
+            },
+            { merge: true },
+          );
+          console.log(
+            `[stripeWebhook] owner ${ownerDoc.id} status → ${sub.status}`,
+          );
+        }
       }
     }
   } catch (err: any) {

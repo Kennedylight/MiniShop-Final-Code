@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Screen } from '@/components/Screen';
@@ -11,6 +12,7 @@ import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 
 export default function TrackOrder() {
+  const { t } = useTranslation();
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null | undefined>(undefined); // undefined = loading
 
@@ -33,18 +35,18 @@ export default function TrackOrder() {
   if (order === null) {
     return (
       <Screen>
-        <Text style={styles.notFoundTitle}>Order not found</Text>
+        <Text style={styles.notFoundTitle}>{t('track.notFoundTitle')}</Text>
         <Text style={styles.notFoundBody}>
-          This tracking link may be invalid or expired.
+          {t('track.notFoundBody')}
         </Text>
-        <Button title="Back home" variant="outline" onPress={() => router.replace('/')} />
+        <Button title={t('shop.backHome')} variant="outline" onPress={() => router.replace('/')} />
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <Text style={styles.label}>Order number</Text>
+      <Text style={styles.label}>{t('track.orderNumber')}</Text>
       <Text style={styles.orderId}>#{order.orderId.slice(0, 8).toUpperCase()}</Text>
       <Text style={styles.shopName}>{order.shopName}</Text>
 

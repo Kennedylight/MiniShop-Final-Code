@@ -11,10 +11,12 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/components/Button";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { Colors } from "@/constants/colors";
 
 const { width } = Dimensions.get("window");
@@ -22,48 +24,49 @@ const { width } = Dimensions.get("window");
 type Slide = {
   key: string;
   icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  text: string;
-  bullets: { icon: keyof typeof Ionicons.glyphMap; label: string }[];
+  titleKey: string;
+  textKey: string;
+  bullets: { icon: keyof typeof Ionicons.glyphMap; key: string }[];
 };
 
 const SLIDES: Slide[] = [
   {
     key: "create",
     icon: "storefront-outline",
-    title: "Build your store in minutes",
-    text: "No coding, no design skills needed. Just add your info and go live.",
+    titleKey: "onboarding.slides.create.title",
+    textKey: "onboarding.slides.create.text",
     bullets: [
-      { icon: "image-outline", label: "Upload your logo & product photos" },
-      { icon: "pricetag-outline", label: "Set prices in your currency" },
-      { icon: "color-palette-outline", label: "Pick a style that fits your brand" },
+      { icon: "image-outline", key: "onboarding.slides.create.bullets.0" },
+      { icon: "pricetag-outline", key: "onboarding.slides.create.bullets.1" },
+      { icon: "color-palette-outline", key: "onboarding.slides.create.bullets.2" },
     ],
   },
   {
     key: "share",
     icon: "share-social-outline",
-    title: "Share your link everywhere",
-    text: "One link for WhatsApp, Instagram, Facebook — wherever your customers are.",
+    titleKey: "onboarding.slides.share.title",
+    textKey: "onboarding.slides.share.text",
     bullets: [
-      { icon: "logo-whatsapp", label: "Perfect for WhatsApp catalogs" },
-      { icon: "qr-code-outline", label: "Shareable QR code included" },
-      { icon: "infinite-outline", label: "No limit on how many times you share" },
+      { icon: "logo-whatsapp", key: "onboarding.slides.share.bullets.0" },
+      { icon: "qr-code-outline", key: "onboarding.slides.share.bullets.1" },
+      { icon: "infinite-outline", key: "onboarding.slides.share.bullets.2" },
     ],
   },
   {
     key: "orders",
     icon: "receipt-outline",
-    title: "Get orders, hassle-free",
-    text: "Customers browse and order directly — no account needed on their side.",
+    titleKey: "onboarding.slides.orders.title",
+    textKey: "onboarding.slides.orders.text",
     bullets: [
-      { icon: "notifications-outline", label: "Instant order notifications" },
-      { icon: "card-outline", label: "Track payments & status" },
-      { icon: "people-outline", label: "Build your customer list automatically" },
+      { icon: "notifications-outline", key: "onboarding.slides.orders.bullets.0" },
+      { icon: "card-outline", key: "onboarding.slides.orders.bullets.1" },
+      { icon: "people-outline", key: "onboarding.slides.orders.bullets.2" },
     ],
   },
 ];
 
 export default function Index() {
+  const { t } = useTranslation();
   const [showSplash, setShowSplash] = useState(true);
   const splashOpacity = useRef(new Animated.Value(1)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
@@ -123,9 +126,11 @@ export default function Index() {
               ))}
             </View>
             <Pressable onPress={skip} hitSlop={10}>
-              <Text style={styles.skipText}>Skip</Text>
+              <Text style={styles.skipText}>{t("onboarding.skip")}</Text>
             </Pressable>
           </View>
+
+          <LanguagePicker />
 
           <FlatList
             ref={listRef}
@@ -146,16 +151,16 @@ export default function Index() {
                 </View>
 
 
-                <Text style={styles.slideTitle}>{item.title}</Text>
-                <Text style={styles.slideText}>{item.text}</Text>
+                <Text style={styles.slideTitle}>{t(item.titleKey)}</Text>
+                <Text style={styles.slideText}>{t(item.textKey)}</Text>
 
                 <View style={styles.bulletList}>
                   {item.bullets.map((b) => (
-                    <View key={b.label} style={styles.bulletRow}>
+                    <View key={b.key} style={styles.bulletRow}>
                       <View style={styles.bulletIconWrap}>
                         <Ionicons name={b.icon} size={16} color={Colors.primary ?? "#22c55e"} />
                       </View>
-                      <Text style={styles.bulletText}>{b.label}</Text>
+                      <Text style={styles.bulletText}>{t(b.key)}</Text>
                     </View>
                   ))}
                 </View>
@@ -171,7 +176,7 @@ export default function Index() {
                 </Pressable>
               )}
               <View style={styles.nextButtonWrap}>
-                <Button title={isLast ? "Get Started" : "Next"} onPress={goNext} />
+                <Button title={isLast ? t("onboarding.getStarted") : t("onboarding.next")} onPress={goNext} />
               </View>
             </View>
 
@@ -182,8 +187,8 @@ export default function Index() {
                 hitSlop={8}
               >
                 <Text style={styles.loginLinkText}>
-                  Already have an account?{" "}
-                  <Text style={styles.loginLinkBold}>Log in</Text>
+                  {t("onboarding.alreadyHaveAccount")} {" "}
+                  <Text style={styles.loginLinkBold}>{t("onboarding.login")}</Text>
                 </Text>
               </Pressable>
             )}

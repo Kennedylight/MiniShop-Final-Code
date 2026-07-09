@@ -10,6 +10,7 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
@@ -19,6 +20,7 @@ import { Colors } from "@/constants/colors";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +32,7 @@ export default function Login() {
       await loginOwner(email, password);
       router.replace("/dashboard");
     } catch (e: any) {
-      Alert.alert("Login Failed", e.message);
+      Alert.alert(t("auth.login.loginFailed"), e.message);
     } finally {
       setLoading(false);
     }
@@ -42,100 +44,103 @@ export default function Login() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        
         bottomOffset={40}
       >
-          {/* Logo / Icon */}
-          <View style={styles.logoWrap}>
-            <View style={styles.logoCircle}>
-              <Ionicons name="storefront" size={30} color="#fff" />
-            </View>
+        {/* Logo / Icon */}
+        <View style={styles.logoWrap}>
+          <View style={styles.logoCircle}>
+            <Ionicons name="storefront" size={30} color="#fff" />
           </View>
+        </View>
 
-          {/* Centered header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>
-              Sign in to manage your store
-            </Text>
+        {/* Centered header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>{t("auth.login.title")}</Text>
+          <Text style={styles.subtitle}>{t("auth.login.subtitle")}</Text>
+        </View>
+
+        {/* Email field */}
+        <View style={styles.field}>
+          <Text style={styles.label}>{t("auth.login.email")}</Text>
+          <View style={styles.inputWrap}>
+            <Ionicons
+              name="mail-outline"
+              size={19}
+              color={Colors.muted}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder={t("auth.login.emailPlaceholder")}
+              placeholderTextColor={Colors.muted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
           </View>
+        </View>
 
-          {/* Email field */}
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputWrap}>
+        {/* Password field */}
+        <View style={styles.field}>
+          <Text style={styles.label}>{t("auth.login.password")}</Text>
+          <View style={styles.inputWrap}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={19}
+              color={Colors.muted}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder={t("auth.login.passwordPlaceholder")}
+              placeholderTextColor={Colors.muted}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              value={password}
+              onChangeText={setPassword}
+              style={[styles.input, { paddingRight: 40 }]}
+            />
+            <Pressable
+              onPress={() => setShowPassword((v) => !v)}
+              style={styles.eyeButton}
+              hitSlop={10}
+            >
               <Ionicons
-                name="mail-outline"
-                size={19}
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={20}
                 color={Colors.muted}
-                style={styles.inputIcon}
               />
-              <TextInput
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.muted}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-              />
-            </View>
-          </View>
-
-          {/* Password field */}
-          <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputWrap}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={19}
-                color={Colors.muted}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                placeholder="••••••••"
-                placeholderTextColor={Colors.muted}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                value={password}
-                onChangeText={setPassword}
-                style={[styles.input, { paddingRight: 40 }]}
-              />
-              <Pressable
-                onPress={() => setShowPassword((v) => !v)}
-                style={styles.eyeButton}
-                hitSlop={10}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color={Colors.muted}
-                />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Forgot password */}
-          <Pressable
-            onPress={() => router.push("/reset-password")}
-            style={styles.forgotWrap}
-            hitSlop={8}
-          >
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </Pressable>
-
-          {/* Login button */}
-          <Button title="Sign In" onPress={submit} loading={loading} />
-
-          {/* Sign up link */}
-          <View style={styles.signupRow}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <Pressable onPress={() => router.push("/signup")} hitSlop={8}>
-              <Text style={styles.signupLink}>Create one</Text>
             </Pressable>
           </View>
-       </KeyboardAwareScrollView>
+        </View>
+
+        {/* Forgot password */}
+        <Pressable
+          onPress={() => router.push("/reset-password")}
+          style={styles.forgotWrap}
+          hitSlop={8}
+        >
+          <Text style={styles.forgotText}>
+            {t("auth.login.forgotPassword")}
+          </Text>
+        </Pressable>
+
+        {/* Login button */}
+        <Button
+          title={t("auth.login.signIn")}
+          onPress={submit}
+          loading={loading}
+        />
+
+        {/* Sign up link */}
+        <View style={styles.signupRow}>
+          <Text style={styles.signupText}>{t("auth.login.noAccount")} </Text>
+          <Pressable onPress={() => router.push("/signup")} hitSlop={8}>
+            <Text style={styles.signupLink}>{t("auth.login.createOne")}</Text>
+          </Pressable>
+        </View>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     paddingVertical: 40,
-    paddingBottom: 20 
+    paddingBottom: 20,
   },
   logoWrap: {
     alignItems: "center",
@@ -232,4 +237,3 @@ const styles = StyleSheet.create({
     color: Colors.primary ?? "#22c55e",
   },
 });
-

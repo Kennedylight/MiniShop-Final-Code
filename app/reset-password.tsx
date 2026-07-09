@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -16,6 +17,7 @@ import { resetPassword } from "@/services/authService";
 import { Colors } from "@/constants/colors";
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -26,7 +28,7 @@ export default function ResetPassword() {
       await resetPassword(email);
       setSent(true);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("auth.resetPassword.error"), e.message);
     } finally {
       setLoading(false);
     }
@@ -63,29 +65,26 @@ export default function ResetPassword() {
               </Text>
             </View>
 
-            <Button title="Back to Login" onPress={() => router.replace("/login")} />
+            <Button title={t("auth.resetPassword.backToLogin")} onPress={() => router.replace("/login")} />
 
             <Pressable
               onPress={() => setSent(false)}
               style={styles.resendWrap}
               hitSlop={8}
             >
-              <Text style={styles.resendText}>Didn't get it? Try again</Text>
+              <Text style={styles.resendText}>{t("auth.resetPassword.didntGetIt")}</Text>
             </Pressable>
           </>
         ) : (
           <>
             {/* Form state */}
             <View style={styles.header}>
-              <Text style={styles.title}>Reset password</Text>
-              <Text style={styles.subtitle}>
-                Enter your email and we'll send you a link to reset your
-                password
-              </Text>
+              <Text style={styles.title}>{t("auth.resetPassword.title")}</Text>
+              <Text style={styles.subtitle}>{t("auth.resetPassword.subtitle")}</Text>
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t("auth.resetPassword.email")}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons
                   name="mail-outline"
@@ -94,7 +93,7 @@ export default function ResetPassword() {
                   style={styles.inputIcon}
                 />
                 <TextInput
-                  placeholder="you@example.com"
+                  placeholder={t("auth.resetPassword.emailPlaceholder")}
                   placeholderTextColor={Colors.muted}
                   autoCapitalize="none"
                   keyboardType="email-address"
@@ -107,7 +106,7 @@ export default function ResetPassword() {
             </View>
 
             <Button
-              title="Send Reset Link"
+              title={t("auth.resetPassword.sendResetLink")}
               onPress={submit}
               loading={loading}
             />

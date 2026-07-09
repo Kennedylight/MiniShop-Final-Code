@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Linking, Text, View, StyleSheet, Pressable, ActivityIndicator } from "react-native";
+import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
@@ -10,16 +11,17 @@ import { auth } from "@/services/firebase";
 import { PlanId, getPhotoLimit } from "@/constants/plans";
 import { Colors } from "@/constants/colors";
 
-const PLAN_LABELS: Record<string, string> = {
-  starter: "Starter",
-  business: "Business",
-  premium: "Premium",
-};
-
 export default function Billing() {
+  const { t } = useTranslation();
   const [plan, setPlan] = useState<PlanId | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
+
+  const PLAN_LABELS: Record<string, string> = {
+    starter: t("billing.plans.starter"),
+    business: t("billing.plans.business"),
+    premium: t("billing.plans.premium"),
+  };
 
   useEffect(() => {
     (async () => {
@@ -40,7 +42,7 @@ export default function Billing() {
       const url = await createCustomerPortal();
       await Linking.openURL(url);
     } catch (e: any) {
-      Alert.alert("Billing", e.message);
+      Alert.alert(t("billing.title"), e.message);
     } finally {
       setPortalLoading(false);
     }
@@ -51,17 +53,15 @@ export default function Billing() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Billing</Text>
-        <Text style={styles.subtitle}>
-          Manage your subscription and payment details
-        </Text>
+        <Text style={styles.title}>{t("billing.title")}</Text>
+        <Text style={styles.subtitle}>{t("billing.subtitle")}</Text>
       </View>
 
       {/* Current plan card */}
       <View style={styles.planCard}>
         <View style={styles.planTop}>
           <View>
-            <Text style={styles.planLabel}>Current plan</Text>
+            <Text style={styles.planLabel}>{t("billing.currentPlan")}</Text>
             {loadingPlan ? (
               <ActivityIndicator size="small" color="#fff" style={{ marginTop: 6 }} />
             ) : (
@@ -78,13 +78,15 @@ export default function Billing() {
         {limit != null && (
           <View style={styles.planFeature}>
             <Ionicons name="images-outline" size={15} color="rgba(255,255,255,0.85)" />
-            <Text style={styles.planFeatureText}>Up to {limit} product photos</Text>
+            <Text style={styles.planFeatureText}>
+              {t("billing.photoLimit", { count: limit })}
+            </Text>
           </View>
         )}
       </View>
 
       {/* Actions */}
-      <Text style={styles.sectionLabel}>Manage</Text>
+      <Text style={styles.sectionLabel}>{t("billing.manage")}</Text>
 
       <Pressable
         onPress={() => router.push("/pricing")}
@@ -94,8 +96,8 @@ export default function Billing() {
           <Ionicons name="trending-up-outline" size={18} color="#fff" />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.rowTitle}>Change plan</Text>
-          <Text style={styles.rowSubtitle}>Upgrade or downgrade anytime</Text>
+          <Text style={styles.rowTitle}>{t("billing.changePlan")}</Text>
+          <Text style={styles.rowSubtitle}>{t("billing.changePlanSubtitle")}</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
       </Pressable>
@@ -113,8 +115,8 @@ export default function Billing() {
           )}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.rowTitle}>Payment & invoices</Text>
-          <Text style={styles.rowSubtitle}>Update card, view invoice history</Text>
+          <Text style={styles.rowTitle}>{t("billing.paymentInvoices")}</Text>
+          <Text style={styles.rowSubtitle}>{t("billing.paymentInvoicesSubtitle")}</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
       </Pressable>

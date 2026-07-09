@@ -30,8 +30,8 @@ import { Screen } from "@/components/Screen";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
-import { CurrencyPicker } from "@/components/CurrencyPicker";
 import { Colors } from "@/constants/colors";
+import { useTranslation } from "react-i18next";
 
 function SkeletonCard() {
   const pulse = useRef(new Animated.Value(0.4)).current;
@@ -69,6 +69,7 @@ function SkeletonCard() {
 }
 
 export default function Products() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -96,7 +97,6 @@ export default function Products() {
 const panResponder = useRef(
   PanResponder.create({
     onMoveShouldSetPanResponder: (_, gestureState) => {
-      // Ne capture le geste que si le drag est clairement vertical vers le bas
       return gestureState.dy > 6 && Math.abs(gestureState.dx) < 20;
     },
     onPanResponderMove: (_, gestureState) => {
@@ -168,7 +168,7 @@ const panResponder = useRef(
 
   const submit = async () => {
     try {
-      if (!uid) throw new Error("Login required");
+      if (!uid) throw new Error(t("products.loginRequired"));
       setLoading(true);
       let imageUrl = image;
       if (image && !image.startsWith("http")) {
@@ -198,21 +198,21 @@ const panResponder = useRef(
       setFormVisible(false);
       await load();
     } catch (e: any) {
-      Alert.alert("Product error", e.message);
+      Alert.alert(t("products.productError"), e.message);
     } finally {
       setLoading(false);
     }
   };
 
   const remove = (productId: string) => {
-    Alert.alert("Delete product", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("products.deleteTitle"), t("products.deleteMessage"), [
+      { text: t("products.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("products.delete"),
         style: "destructive",
         onPress: async () => {
           await deleteProduct(productId).catch((e) =>
-            Alert.alert("Error", e.message)
+            Alert.alert(t("products.productError"), e.message)
           );
           await load();
         },
@@ -234,9 +234,11 @@ const panResponder = useRef(
           <View style={styles.usageCard}>
             <View style={styles.usageTop}>
               <Text style={styles.usageText}>
-                {products.length}/{limit} products used
+                {t("products.usageText", { count: products.length, limit })}
               </Text>
-              <Text style={styles.usagePlan}>{plan.toUpperCase()}</Text>
+              <Text style={styles.usagePlan}>
+                {t("products.usagePlan", { plan: plan.toUpperCase() })}
+              </Text>
             </View>
             <View style={styles.usageTrack}>
               <View style={[styles.usageFill, { width: `${usagePct * 100}%` }]} />
@@ -255,9 +257,9 @@ const panResponder = useRef(
               <View style={styles.emptyIconWrap}>
                 <Ionicons name="cube-outline" size={32} color={Colors.muted} />
               </View>
-              <Text style={styles.emptyTitle}>No products yet</Text>
+              <Text style={styles.emptyTitle}>{t("products.noProducts")}</Text>
               <Text style={styles.emptyText}>
-                Tap the + button to add your first product
+                {t("products.noProductsText")}
               </Text>
             </View>
           ) : (
@@ -314,7 +316,7 @@ const panResponder = useRef(
 
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editingId ? "Edit Product" : "Add Product"}
+                {editingId ? t("products.editProduct") : t("products.addProduct")}
               </Text>
               <Pressable
                 onPress={() => setFormVisible(false)}
@@ -332,7 +334,7 @@ const panResponder = useRef(
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Photo</Text>
+                <Text style={styles.fieldLabel}>{t("products.photo")}</Text>
                 <Pressable onPress={pick} style={styles.photoPicker}>
                   {image ? (
                     <View style={styles.photoPreviewWrap}>
@@ -344,26 +346,25 @@ const panResponder = useRef(
                   ) : (
                     <View style={styles.photoPlaceholder}>
                       <Ionicons name="camera-outline" size={26} color={Colors.muted} />
-                      <Text style={styles.photoPlaceholderText}>Add photo</Text>
+                      <Text style={styles.photoPlaceholderText}>{t("products.addPhoto")}</Text>
                     </View>
                   )}
                 </Pressable>
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Product name</Text>
-                <Input placeholder="Product name" value={name} onChangeText={setName} />
+                <Text style={styles.fieldLabel}>{t("products.productName")}</Text>
+                <Input 
+                  placeholder={t("products.productName")} 
+                  value={name} 
+                  onChangeText={setName} 
+                />
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Currency</Text>
-                <CurrencyPicker value={currency} onChange={setCurrency} />
-              </View>
-
-              <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Price</Text>
+                <Text style={styles.fieldLabel}>{t("products.price")}</Text>
                 <Input
-                  placeholder={`Price (${currency})`}
+                  placeholder={`${t("products.price")} (${currency})`}
                   keyboardType="decimal-pad"
                   value={price}
                   onChangeText={setPrice}
@@ -371,12 +372,16 @@ const panResponder = useRef(
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Description</Text>
-                <Input placeholder="Description" value={desc} onChangeText={setDesc} />
+                <Text style={styles.fieldLabel}>{t("products.description")}</Text>
+                <Input 
+                  placeholder={t("products.description")} 
+                  value={desc} 
+                  onChangeText={setDesc} 
+                />
               </View>
 
               <Button
-                title={editingId ? "Save Changes" : "Add Product"}
+                title={editingId ? t("products.saveChanges") : t("products.addProductButton")}
                 onPress={submit}
                 loading={loading}
               />
@@ -546,7 +551,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Colors.muted,
   },
-  // Skeleton styles
   skeletonImage: {
     width: "100%",
     aspectRatio: 1,

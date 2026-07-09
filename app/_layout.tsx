@@ -6,19 +6,26 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/services/firebase";
 import StripeWrapper from "@/components/StripeWrapper";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { loadStoredLanguage } from "@/services/i18n";
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [isReady, setIsReady] = useState(false);
+  const [languageLoaded, setLanguageLoaded] = useState(false);
   const router = useRouter();
   const segments = useSegments();
+  const screenOptions = { headerShown: false };
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
 
   useEffect(() => {
-    if (user === undefined) return;
+    loadStoredLanguage().finally(() => setLanguageLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (user === undefined || !languageLoaded) return;
 
     const inProtected = segments[0] === "dashboard" || segments[0] === "admin";
     const inAuthOnly = ["", "login", "signup", "reset-password"].includes(
@@ -37,9 +44,8 @@ export default function RootLayout() {
       return;
     }
 
-    // La route actuelle est cohérente avec l'état de connexion : on peut afficher
     setIsReady(true);
-  }, [user, segments, router]);
+  }, [user, segments, router, languageLoaded]);
 
   if (user === undefined || !isReady) {
     return (
@@ -55,7 +61,7 @@ export default function RootLayout() {
     <KeyboardProvider>
       <SafeAreaProvider>
         <StripeWrapper>
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack screenOptions={screenOptions}>
             <Stack.Screen name="index" />
             <Stack.Screen name="login" />
             <Stack.Screen name="signup" />

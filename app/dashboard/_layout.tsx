@@ -1,19 +1,22 @@
 import { Tabs, router, usePathname } from "expo-router";
-import { Pressable, View, Alert } from "react-native";
+import { Pressable, View, Alert, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
 import { auth } from "@/services/firebase";
 import { Colors } from "@/constants/colors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function HeaderRight() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isOnProfile = pathname === "/dashboard/profile";
 
   const handleLogout = () => {
-    Alert.alert("Log out", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("dashboard.logOut"), t("dashboard.logOutConfirm"), [
+      { text: t("dashboard.cancel"), style: "cancel" },
       {
-        text: "Log out",
+        text: t("dashboard.logOutAction"),
         style: "destructive",
         onPress: () => signOut(auth),
       },
@@ -79,12 +82,14 @@ function HeaderRight() {
 }
 
 export default function DashboardLayout() {
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   return (
-    <Tabs
+      <Tabs
       initialRouteName="products"
       screenOptions={{
         headerShown: true,
-        title: "MiniShop",
+        title: t("dashboard.miniShop"),
         headerRight: () => <HeaderRight />,
         headerShadowVisible: false,
         headerStyle: { backgroundColor: Colors.background ?? "#fff" },
@@ -94,8 +99,8 @@ export default function DashboardLayout() {
         tabBarStyle: {
           backgroundColor: Colors.background ?? "#fff",
           borderTopColor: Colors.border ?? "rgba(0,0,0,0.06)",
-          height: 60,
-          paddingBottom: 8,
+          height: Platform.OS === "ios" ? 60 + insets.bottom : 60,
+          paddingBottom: Platform.OS === "ios" ? insets.bottom : 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
@@ -104,7 +109,7 @@ export default function DashboardLayout() {
       <Tabs.Screen
         name="products"
         options={{
-          title: "Products",
+          title: t("dashboard.products"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="cube-outline" size={size} color={color} />
           ),
@@ -113,7 +118,7 @@ export default function DashboardLayout() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: "Orders",
+          title: t("dashboard.orders"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="receipt-outline" size={size} color={color} />
           ),
@@ -122,7 +127,7 @@ export default function DashboardLayout() {
       <Tabs.Screen
         name="share"
         options={{
-          title: "Share",
+          title: t("dashboard.share"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="share-social-outline" size={size} color={color} />
           ),
@@ -131,7 +136,7 @@ export default function DashboardLayout() {
       <Tabs.Screen
         name="billing"
         options={{
-          title: "Billing",
+          title: t("dashboard.billing"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="card-outline" size={size} color={color} />
           ),
@@ -141,7 +146,7 @@ export default function DashboardLayout() {
         name="profile"
         options={{
           href: null,
-          title: "Profile",
+          title: t("dashboard.profile"),
         }}
       />
     </Tabs>

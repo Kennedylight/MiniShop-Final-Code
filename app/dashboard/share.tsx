@@ -9,6 +9,7 @@ import {
   Image,
   Linking,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "@/services/firebase";
@@ -18,12 +19,22 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Colors } from "@/constants/colors";
 
+type LinkStatus = "loading" | "ready" | "signInRequired" | "profileIncomplete" | "error";
+
 export default function SharePage() {
+  const { t } = useTranslation();
   const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<LinkStatus>("loading");
   const [copied, setCopied] = useState(false);
 
-  const isReady = url && !url.startsWith("Please") && !url.startsWith("Could not");
+  const isReady = status === "ready";
+
+  const statusMessage: Record<Exclude<LinkStatus, "ready">, string> = {
+    loading: t("share.loadingLink"),
+    signInRequired: t("share.signInFirst"),
+    profileIncomplete: t("share.completeProfileFirst"),
+    error: t("share.couldNotLoadLink"),
+  };
 
   useEffect(() => {
     async function loadStoreLink() {
@@ -31,7 +42,7 @@ export default function SharePage() {
         const uid = auth.currentUser?.uid;
 
         if (!uid) {
-          setUrl("Please sign in first.");
+          setStatus("signInRequired");
           return;
         }
 
@@ -46,16 +57,15 @@ export default function SharePage() {
         const shopSlug = owner?.shopSlug || uid;
 
         if (!shopSlug) {
-          setUrl("Please complete your store profile first.");
+          setStatus("profileIncomplete");
           return;
         }
 
         setUrl(`${cleanBaseUrl}/${shopSlug}`);
+        setStatus("ready");
       } catch (error) {
         console.log("SharePage error:", error);
-        setUrl("Could not load store link.");
-      } finally {
-        setLoading(false);
+        setStatus("error");
       }
     }
 
@@ -64,28 +74,28 @@ export default function SharePage() {
 
   const handleShare = async () => {
     if (!isReady) {
-      Alert.alert("Store Link", url || "Store link is not ready yet.");
+      Alert.alert(t("share.storeLink"), statusMessage[status as Exclude<LinkStatus, "ready">]);
       return;
     }
     await Share.share({
-      message: `Shop with us on MiniShop: ${url}`,
+      message: t("share.shareMessage", { url }),
     });
   };
 
   const handleWhatsApp = () => {
     if (!isReady) {
-      Alert.alert("Store Link", "Store link is not ready yet.");
+      Alert.alert(t("share.storeLink"), statusMessage[status as Exclude<LinkStatus, "ready">]);
       return;
     }
-    const message = encodeURIComponent(`Shop with us on MiniShop: ${url}`);
+    const message = encodeURIComponent(t("share.shareMessage", { url }));
     Linking.openURL(`whatsapp://send?text=${message}`).catch(() => {
-      Alert.alert("WhatsApp not installed", "Try the general share option instead.");
+      Alert.alert(t("share.whatsappNotInstalled"), t("share.tryGeneralShare"));
     });
   };
 
   const handleCopy = async () => {
     if (!isReady) {
-      Alert.alert("Store Link", url || "Store link is not ready yet.");
+      Alert.alert(t("share.storeLink"), statusMessage[status as Exclude<LinkStatus, "ready">]);
       return;
     }
     await Clipboard.setStringAsync(url);
@@ -100,15 +110,13 @@ export default function SharePage() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Share your store</Text>
-        <Text style={styles.subtitle}>
-          Send this link anywhere your customers are
-        </Text>
+        <Text style={styles.title}>{t("share.title")}</Text>
+        <Text style={styles.subtitle}>{t("share.subtitle")}</Text>
       </View>
 
       {/* QR Code */}
       <Card style={styles.qrCard}>
-        {loading ? (
+        {status === "loading" ? (
           <View style={styles.qrPlaceholder}>
             <Ionicons name="qr-code-outline" size={40} color={Colors.muted} />
           </View>
@@ -117,11 +125,13 @@ export default function SharePage() {
         ) : (
           <View style={styles.qrPlaceholder}>
             <Ionicons name="alert-circle-outline" size={32} color={Colors.muted} />
-            <Text style={styles.qrErrorText}>{url}</Text>
+            <Text style={styles.qrErrorText}>
+              {statusMessage[status as Exclude<LinkStatus, "ready">]}
+            </Text>
           </View>
         )}
         {isReady && (
-          <Text style={styles.qrHint}>Scan to visit your store</Text>
+          <Text style={styles.qrHint}>{t("share.scanToVisit")}</Text>
         )}
       </Card>
 
@@ -131,7 +141,7 @@ export default function SharePage() {
           <Ionicons name="link-outline" size={18} color={Colors.primary ?? "#22c55e"} />
         </View>
         <Text style={styles.linkText} numberOfLines={1}>
-          {loading ? "Loading store link..." : url}
+          {status === "loading" ? t("share.loadingLink") : isReady ? url : statusMessage[status as Exclude<LinkStatus, "ready">]}
         </Text>
         <Pressable
           onPress={handleCopy}
@@ -157,7 +167,7 @@ export default function SharePage() {
           ]}
         >
           <Ionicons name="logo-whatsapp" size={22} color="#fff" />
-          <Text style={styles.whatsappText}>WhatsApp</Text>
+          <Text style={styles.whatsappText}>{t("share.whatsapp")}</Text>
         </Pressable>
 
         <Pressable
@@ -169,7 +179,7 @@ export default function SharePage() {
           ]}
         >
           <Ionicons name="share-social-outline" size={22} color={Colors.text} />
-          <Text style={styles.shareText}>More options</Text>
+          <Text style={styles.shareText}>{t("share.moreOptions")}</Text>
         </Pressable>
       </View>
     </Screen>
@@ -180,46 +190,13 @@ const RADIUS = 18;
 
 const styles = StyleSheet.create({
   header: { marginBottom: 20 },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: Colors.text,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.muted,
-    marginTop: 4,
-  },
-  qrCard: {
-    alignItems: "center",
-    borderRadius: RADIUS,
-    paddingVertical: 24,
-    marginBottom: 16,
-  },
-  qrImage: {
-    width: 180,
-    height: 180,
-  },
-  qrPlaceholder: {
-    width: 180,
-    height: 180,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  qrErrorText: {
-    fontSize: 12,
-    color: Colors.muted,
-    textAlign: "center",
-    paddingHorizontal: 12,
-  },
-  qrHint: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: Colors.muted,
-    marginTop: 14,
-  },
+  title: { fontSize: 26, fontWeight: "800", color: Colors.text, letterSpacing: -0.3 },
+  subtitle: { fontSize: 14, color: Colors.muted, marginTop: 4 },
+  qrCard: { alignItems: "center", borderRadius: RADIUS, paddingVertical: 24, marginBottom: 16 },
+  qrImage: { width: 180, height: 180 },
+  qrPlaceholder: { width: 180, height: 180, alignItems: "center", justifyContent: "center", gap: 8 },
+  qrErrorText: { fontSize: 12, color: Colors.muted, textAlign: "center", paddingHorizontal: 12 },
+  qrHint: { fontSize: 13, fontWeight: "600", color: Colors.muted, marginTop: 14 },
   linkCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -238,12 +215,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  linkText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.text,
-  },
+  linkText: { flex: 1, fontSize: 14, fontWeight: "700", color: Colors.text },
   copyButton: {
     width: 32,
     height: 32,
@@ -252,34 +224,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionCard: {
-    flex: 1,
-    borderRadius: RADIUS,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-  },
-  whatsappCard: {
-    backgroundColor: "#25D366",
-  },
-  whatsappText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
-  },
+  actionsRow: { flexDirection: "row", gap: 12 },
+  actionCard: { flex: 1, borderRadius: RADIUS, paddingVertical: 16, alignItems: "center", justifyContent: "center", gap: 6 },
+  whatsappCard: { backgroundColor: "#25D366" },
+  whatsappText: { fontSize: 13, fontWeight: "700", color: "#fff" },
   shareCard: {
     backgroundColor: Colors.card ?? "#f5f5f7",
     borderWidth: 1,
     borderColor: Colors.border ?? "rgba(0,0,0,0.06)",
   },
-  shareText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: Colors.text,
-  },
+  shareText: { fontSize: 13, fontWeight: "700", color: Colors.text },
 });

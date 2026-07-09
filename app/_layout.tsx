@@ -24,30 +24,29 @@ export default function RootLayout() {
     loadStoredLanguage().finally(() => setLanguageLoaded(true));
   }, []);
 
-  useEffect(() => {
-    if (user === undefined || !languageLoaded) return;
+useEffect(() => {
+  if (user === undefined || !languageLoaded) return;
 
-    const inProtected = segments[0] === "dashboard" || segments[0] === "admin";
-    const inAuthOnly = ["", "login", "signup", "reset-password"].includes(
-      segments[0] ?? ""
-    );
+  const currentRoute = segments[0] ?? "";
 
-    if (!user && inProtected) {
-      setIsReady(false);
-      router.replace("/login");
-      return;
-    }
+  const inProtected =
+    currentRoute === "dashboard" || currentRoute === "admin";
 
-    if (user && inAuthOnly) {
-      setIsReady(false);
-      router.replace("/dashboard");
-      return;
-    }
+  const inAuthOnly = ["", "login", "signup", "reset-password"].includes(
+    currentRoute
+  );
 
-    setIsReady(true);
-  }, [user, segments, router, languageLoaded]);
+  if (!user && inProtected) {
+    router.replace("/login");
+    return;
+  }
 
-  if (user === undefined || !isReady) {
+  if (user && inAuthOnly) {
+    router.replace("/dashboard");
+  }
+}, [user, segments, languageLoaded]);
+
+  if (user === undefined || !languageLoaded) {
     return (
       <SafeAreaProvider>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

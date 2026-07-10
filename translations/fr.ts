@@ -28,6 +28,8 @@ export default {
       orders: {
         title: "Recevez des commandes sans stress",
         text: "Les clients consultent et commandent directement — aucun compte requis.",
+          whatsappMessage: "Bonjour {{name}} 👋,\n\nVous pouvez suivre votre commande en temps réel en cliquant sur le lien ci-dessous :\n{{link}}\n\nMerci pour votre confiance ! 🙏",
+
         bullets: [
           "Notifications de commande instantanées",
           "Suivez paiements et statuts",
@@ -159,7 +161,7 @@ orders: {
     "addProduct": "Ajouter un produit",
     "editProduct": "Modifier le produit",
     "photo": "Photo",
-    "addPhoto": "Ajouter une photo",
+    "addPhoto": "Ajouter",
     "productName": "Nom du produit",
     "price": "Prix",
     "description": "Description",
@@ -173,20 +175,53 @@ orders: {
     "loginRequired": "Connexion requise"
   },
 
-  dashboard: {
-    miniShop: "MiniShop",
+ // fr.ts — à ajouter DANS ton objet dashboard existant
+dashboard: {
+  "miniShop": "MiniShop",
+  "products": "Produits",
+  "orders": "Commandes",
+  "share": "Partager",
+  "billing": "Facturation",
+  "profile": "Profil",
+  "logOut": "Se déconnecter",
+  "logOutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "cancel": "Annuler",
+  "logOutAction": "Se déconnecter",
+  "unauthorized": "Accès non autorisé. Les droits administrateur sont requis.",
+  "checkingAccess": "Vérification des autorisations…",
+  "accessDenied": "Accès refusé. Vous n'avez pas les droits administrateur.",
+  "accessGranted": "Accès accordé. Vous êtes administrateur.",
+
+  greetingEyebrow: "Tableau de bord",
+  title: "Votre boutique",
+  helloName: "Bonjour, {{name}}",
+  storeReady: "Votre boutique est prête",
+  trialBadge: "{{days}}j restants d'essai",
+  trialTitle: "Il vous reste {{days}} jours d'essai",
+  trialHint: "Passez à un forfait à tout moment pour garder un accès complet",
+  trialCta: "Passer au forfait",
+  trialExpiredTitle: "Votre essai est terminé",
+  noticeSubscription: "Abonnez-vous pour continuer à gérer votre boutique",
+  stats: {
+    ordersTotal: "Commandes totales",
+    ordersActive: "Commandes actives",
+    revenue: "Revenu",
     products: "Produits",
-    orders: "Commandes",
-    share: "Partager",
-    billing: "Facturation",
-    profile: "Profil",
-    logOut: "Se déconnecter",
-    logOutConfirm: "Êtes-vous sûr de vouloir vous déconnecter ?",
-    cancel: "Annuler",
-    logOutAction: "Se déconnecter",
-    unauthorized: "Non autorisé. Accès administrateur requis.",
-    checkingAccess: "Vérification de l'accès…",
   },
+  ordersChartTitle: "Commandes (14 jours)",
+  last14: "14 derniers jours",
+  statusBreakdown: "Répartition par statut",
+  shopLink: "Lien de la boutique",
+  photosHint: "{{remaining}} emplacements restants",
+},
+
+empty: {
+  noResults: "Aucune donnée pour l'instant",
+},
+
+nav: {
+  products: "Produits",
+},
   shop: {
     notFound: "Boutique introuvable.",
     unavailableTitle: "Boutique indisponible",
@@ -219,5 +254,6 @@ orders: {
   },
   common: {
     selectLanguage: "Choisir la langue",
+     all: "Tout voir",
   },
 };

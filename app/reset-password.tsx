@@ -14,10 +14,11 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
 import { resetPassword } from "@/services/authService";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function ResetPassword() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -45,7 +46,7 @@ export default function ResetPassword() {
 
         {/* Icon */}
         <View style={styles.logoWrap}>
-          <View style={styles.logoCircle}>
+          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
             <Ionicons
               name={sent ? "checkmark" : "key-outline"}
               size={28}
@@ -58,10 +59,14 @@ export default function ResetPassword() {
           <>
             {/* Success state */}
             <View style={styles.header}>
-              <Text style={styles.title}>Check your email</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.title, { color: colors.text }]}>
+                Check your email
+              </Text>
+              <Text style={[styles.subtitle, { color: colors.muted }]}>
                 We sent a reset link to{"\n"}
-                <Text style={styles.emailHighlight}>{email}</Text>
+                <Text style={[styles.emailHighlight, { color: colors.text }]}>
+                  {email}
+                </Text>
               </Text>
             </View>
 
@@ -72,35 +77,46 @@ export default function ResetPassword() {
               style={styles.resendWrap}
               hitSlop={8}
             >
-              <Text style={styles.resendText}>{t("auth.resetPassword.didntGetIt")}</Text>
+              <Text style={[styles.resendText, { color: colors.primary }]}>
+                {t("auth.resetPassword.didntGetIt")}
+              </Text>
             </Pressable>
           </>
         ) : (
           <>
             {/* Form state */}
             <View style={styles.header}>
-              <Text style={styles.title}>{t("auth.resetPassword.title")}</Text>
-              <Text style={styles.subtitle}>{t("auth.resetPassword.subtitle")}</Text>
+              <Text style={[styles.title, { color: colors.text }]}>
+                {t("auth.resetPassword.title")}
+              </Text>
+              <Text style={[styles.subtitle, { color: colors.muted }]}>
+                {t("auth.resetPassword.subtitle")}
+              </Text>
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t("auth.resetPassword.email")}</Text>
-              <View style={styles.inputWrap}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t("auth.resetPassword.email")}
+              </Text>
+              <View style={[styles.inputWrap, { 
+                backgroundColor: colors.card || "#f5f5f7",
+                borderColor: colors.border || "rgba(0,0,0,0.06)"
+              }]}>
                 <Ionicons
                   name="mail-outline"
                   size={19}
-                  color={Colors.muted}
+                  color={colors.muted}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   placeholder={t("auth.resetPassword.emailPlaceholder")}
-                  placeholderTextColor={Colors.muted}
+                  placeholderTextColor={colors.muted}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   autoComplete="email"
                   value={email}
                   onChangeText={setEmail}
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                 />
               </View>
             </View>
@@ -140,7 +156,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -152,20 +167,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: Colors.text,
     textAlign: "center",
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.muted,
     marginTop: 8,
     textAlign: "center",
     lineHeight: 20,
   },
   emailHighlight: {
     fontWeight: "700",
-    color: Colors.text,
   },
   field: {
     marginBottom: 20,
@@ -173,16 +185,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 6,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.06)",
     paddingHorizontal: 14,
   },
   inputIcon: {
@@ -192,7 +201,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 15,
-    color: Colors.text,
   },
   resendWrap: {
     alignSelf: "center",
@@ -201,6 +209,5 @@ const styles = StyleSheet.create({
   resendText: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.primary ?? "#22c55e",
   },
 });

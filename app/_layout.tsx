@@ -7,6 +7,7 @@ import { auth } from "@/services/firebase";
 import StripeWrapper from "@/components/StripeWrapper";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { loadStoredLanguage } from "@/services/i18n";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -48,10 +49,13 @@ useEffect(() => {
 
   if (user === undefined || !languageLoaded) {
     return (
+      
       <SafeAreaProvider>
+        <ThemeProvider>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" />
         </View>
+        </ThemeProvider>
       </SafeAreaProvider>
     );
   }
@@ -60,6 +64,7 @@ useEffect(() => {
     <KeyboardProvider>
       <SafeAreaProvider>
         <StripeWrapper>
+          <ThemeProvider>
           <Stack screenOptions={screenOptions}>
             <Stack.Screen name="index" />
             <Stack.Screen name="login" />
@@ -69,6 +74,7 @@ useEffect(() => {
             <Stack.Screen name="dashboard" />
             <Stack.Screen name="admin" />
           </Stack>
+          </ThemeProvider>
         </StripeWrapper>
       </SafeAreaProvider>
     </KeyboardProvider>

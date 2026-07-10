@@ -2,10 +2,11 @@ import { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { saveLanguage, supportedLanguages } from "@/services/i18n";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 export function LanguagePicker() {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const [current, setCurrent] = useState(i18n.language || "en");
 
   const handleChange = async (code: string) => {
@@ -15,7 +16,9 @@ export function LanguagePicker() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{t("common.selectLanguage")}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>
+        {t("common.selectLanguage")}
+      </Text>
       <View style={styles.buttonsRow}>
         {supportedLanguages.map((lang) => {
           const isActive = current === lang.code;
@@ -25,11 +28,19 @@ export function LanguagePicker() {
               onPress={() => handleChange(lang.code)}
               style={[
                 styles.button,
+                { 
+                  borderColor: colors.border || "rgba(0,0,0,0.12)",
+                  backgroundColor: isActive ? colors.primary : (colors.card || "#f5f5f7"),
+                },
                 isActive && styles.buttonActive,
               ]}
               hitSlop={8}
             >
-              <Text style={[styles.buttonText, isActive && styles.buttonTextActive]}>
+              <Text style={[
+                styles.buttonText, 
+                { color: isActive ? "#fff" : colors.text },
+                isActive && styles.buttonTextActive
+              ]}>
                 {lang.label}
               </Text>
             </Pressable>
@@ -48,7 +59,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 8,
   },
   buttonsRow: {
@@ -61,18 +71,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.12)",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
   },
   buttonActive: {
-    backgroundColor: Colors.primary ?? "#22c55e",
-    borderColor: Colors.primary ?? "#22c55e",
+    borderColor: "transparent",
   },
   buttonText: {
     fontSize: 13,
     fontWeight: "700",
-    color: Colors.text,
   },
   buttonTextActive: {
     color: "#fff",

@@ -16,14 +16,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
 import { registerOwner } from "@/services/authService";
-import { Colors } from "@/constants/colors";
-
 import { CurrencyPicker } from "@/components/CurrencyPicker";
+import { useTheme } from "@/context/ThemeContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { DEFAULT_CURRENCY } from "@/constants/currency";
 
 export default function Signup() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [fullName, setFullName] = useState("");
   const [shopName, setShopName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,6 +40,11 @@ export default function Signup() {
       await registerOwner({ fullName, shopName, email, password, whatsapp });
       router.replace("/pricing");
     } catch (e: any) {
+      console.log("Signup error:", e);
+      console.log("Response:", e?.response?.data);
+      console.log("Status:", e?.response?.status);
+      console.log("URL:", e?.config?.url);
+      console.log("Method:", e?.config?.method);
       Alert.alert(t("auth.signup.signupFailed"), e.message);
     } finally {
       setLoading(false);
@@ -56,126 +61,158 @@ export default function Signup() {
       >
         {/* Logo */}
         <View style={styles.logoWrap}>
-          <View style={styles.logoCircle}>
+          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
             <Ionicons name="storefront" size={30} color="#fff" />
           </View>
         </View>
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{t("auth.signup.title")}</Text>
-          <Text style={styles.subtitle}>{t("auth.signup.subtitle")}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {t("auth.signup.title")}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.muted }]}>
+            {t("auth.signup.subtitle")}
+          </Text>
         </View>
 
         {/* Full name */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.signup.fullName")}</Text>
-          <View style={styles.inputWrap}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("auth.signup.fullName")}
+          </Text>
+          <View style={[styles.inputWrap, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border || 'rgba(0,0,0,0.06)'
+          }]}>
             <Ionicons
               name="person-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.signup.fullName")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               autoCapitalize="words"
               value={fullName}
               onChangeText={setFullName}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
             />
           </View>
         </View>
 
         {/* Shop name */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.signup.shopName")}</Text>
-          <View style={styles.inputWrap}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("auth.signup.shopName")}
+          </Text>
+          <View style={[styles.inputWrap, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border || 'rgba(0,0,0,0.06)'
+          }]}>
             <Ionicons
               name="storefront-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.signup.shopName")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               autoCapitalize="words"
               value={shopName}
               onChangeText={setShopName}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
             />
           </View>
         </View>
 
         {/* Email */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.signup.email")}</Text>
-          <View style={styles.inputWrap}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("auth.signup.email")}
+          </Text>
+          <View style={[styles.inputWrap, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border || 'rgba(0,0,0,0.06)'
+          }]}>
             <Ionicons
               name="mail-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.signup.emailPlaceholder")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
               value={email}
               onChangeText={setEmail}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
             />
           </View>
         </View>
 
         {/* WhatsApp */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.signup.whatsapp")}</Text>
-          <View style={styles.inputWrap}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("auth.signup.whatsapp")}
+          </Text>
+          <View style={[styles.inputWrap, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border || 'rgba(0,0,0,0.06)'
+          }]}>
             <Ionicons
               name="logo-whatsapp"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.signup.whatsapp")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               keyboardType="phone-pad"
               value={whatsapp}
               onChangeText={setWhatsapp}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
             />
           </View>
         </View>
 
-        {/*choice the device that we will use */}
+        {/* Currency */}
         <View style={styles.fieldWrap}>
-          <Text style={styles.fieldLabel}>{t("auth.signup.currency")}</Text>
+          <Text style={[styles.fieldLabel, { color: colors.text }]}>
+            {t("auth.signup.currency")}
+          </Text>
           <CurrencyPicker value={currency} onChange={setCurrency} />
         </View>
+
         {/* Password */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.signup.password")}</Text>
-          <View style={styles.inputWrap}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t("auth.signup.password")}
+          </Text>
+          <View style={[styles.inputWrap, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border || 'rgba(0,0,0,0.06)'
+          }]}>
             <Ionicons
               name="lock-closed-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.signup.passwordPlaceholder")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               value={password}
               onChangeText={setPassword}
-              style={[styles.input, { paddingRight: 40 }]}
+              style={[styles.input, { color: colors.text, paddingRight: 40 }]}
             />
             <Pressable
               onPress={() => setShowPassword((v) => !v)}
@@ -185,7 +222,7 @@ export default function Signup() {
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                 size={20}
-                color={Colors.muted}
+                color={colors.muted}
               />
             </Pressable>
           </View>
@@ -196,9 +233,13 @@ export default function Signup() {
 
         {/* Login link */}
         <View style={styles.loginRow}>
-          <Text style={styles.loginText}>{t("auth.signup.alreadyHaveAccount")} </Text>
+          <Text style={[styles.loginText, { color: colors.muted }]}>
+            {t("auth.signup.alreadyHaveAccount")}{" "}
+          </Text>
           <Pressable onPress={() => router.push("/login")} hitSlop={8}>
-            <Text style={styles.loginLink}>{t("auth.signup.login")}</Text>
+            <Text style={[styles.loginLink, { color: colors.primary }]}>
+              {t("auth.signup.login")}
+            </Text>
           </Pressable>
         </View>
       </KeyboardAwareScrollView>
@@ -221,15 +262,15 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
   },
-  fieldWrap: { marginBottom: 16 },
+  fieldWrap: { 
+    marginBottom: 16 
+  },
   fieldLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 6,
   },
   header: {
@@ -239,13 +280,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: Colors.text,
     textAlign: "center",
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.muted,
     marginTop: 6,
     textAlign: "center",
   },
@@ -255,16 +294,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 6,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.06)",
     paddingHorizontal: 14,
   },
   inputIcon: {
@@ -274,7 +310,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 15,
-    color: Colors.text,
   },
   eyeButton: {
     position: "absolute",
@@ -288,11 +323,9 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 14,
-    color: Colors.muted,
   },
   loginLink: {
     fontSize: 14,
     fontWeight: "700",
-    color: Colors.primary ?? "#22c55e",
   },
 });

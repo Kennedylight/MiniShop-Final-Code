@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { Input } from './Input';
-import { Colors } from '@/constants/colors';
+import { useTheme } from '@/context/ThemeContext';
 import { COUNTRY_CODES, CountryCode } from '@/constants/countryCodes';
 
 type Props = {
@@ -12,6 +12,7 @@ type Props = {
 };
 
 export function PhoneInput({ placeholder, value, onChangeText, defaultDialCode = '+237' }: Props) {
+  const { colors } = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const currentCountry =
@@ -36,8 +37,8 @@ export function PhoneInput({ placeholder, value, onChangeText, defaultDialCode =
   return (
     <View>
       <View style={styles.row}>
-        <TouchableOpacity style={styles.codeButton} onPress={() => setPickerOpen(true)}>
-          <Text style={styles.codeText}>{currentCountry.flag} {currentCountry.dial}</Text>
+        <TouchableOpacity style={[styles.codeButton, { borderColor: colors.border, backgroundColor: colors.card }]} onPress={() => setPickerOpen(true)}>
+          <Text style={[styles.codeText, { color: colors.text }]}>{currentCountry.flag} {currentCountry.dial}</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Input
@@ -51,15 +52,15 @@ export function PhoneInput({ placeholder, value, onChangeText, defaultDialCode =
 
       <Modal visible={pickerOpen} animationType="slide" transparent onRequestClose={() => setPickerOpen(false)}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => setPickerOpen(false)}>
-          <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>Select country code</Text>
+          <View style={[styles.sheet, { backgroundColor: colors.card }]}> 
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>Select country code</Text>
             <FlatList
               data={COUNTRY_CODES}
               keyExtractor={item => item.dial + item.name}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.optionRow} onPress={() => setCountry(item)}>
-                  <Text style={styles.optionText}>{item.flag}  {item.name}</Text>
-                  <Text style={styles.optionDial}>{item.dial}</Text>
+                <TouchableOpacity style={[styles.optionRow, { borderBottomColor: colors.border }]} onPress={() => setCountry(item)}>
+                  <Text style={[styles.optionText, { color: colors.text }]}>{item.flag}  {item.name}</Text>
+                  <Text style={[styles.optionDial, { color: colors.muted }]}>{item.dial}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -74,17 +75,15 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   codeButton: {
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
   },
-  codeText: { fontWeight: '700', color: Colors.text },
+  codeText: { fontWeight: '700' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '70%' },
-  sheetTitle: { fontWeight: '900', fontSize: 18, color: Colors.text, marginBottom: 12 },
-  optionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  optionText: { color: Colors.text, fontSize: 15 },
-  optionDial: { color: Colors.muted, fontWeight: '700' },
+  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '70%' },
+  sheetTitle: { fontWeight: '900', fontSize: 18, marginBottom: 12 },
+  optionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1 },
+  optionText: { fontSize: 15 },
+  optionDial: { fontWeight: '700' },
 });

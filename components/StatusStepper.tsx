@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/colors';
+import { useTheme } from '@/context/ThemeContext';
 import { OrderStatus } from '@/types/Order';
 
 const STEPS: OrderStatus[] = ['new', 'confirmed', 'in_process', 'ready', 'out_for_delivery', 'completed'];
@@ -15,11 +15,13 @@ const LABELS: Record<OrderStatus, string> = {
 };
 
 export function StatusStepper({ status }: { status: OrderStatus }) {
+  const { colors } = useTheme();
+
   if (status === 'cancelled') {
     return (
       <View style={styles.cancelledBox}>
-        <Text style={styles.cancelledTitle}>Order cancelled</Text>
-        <Text style={styles.cancelledNote}>This order will not be fulfilled.</Text>
+        <Text style={[styles.cancelledTitle, { color: colors.danger }]}>Order cancelled</Text>
+        <Text style={[styles.cancelledNote, { color: colors.muted }]}>This order will not be fulfilled.</Text>
       </View>
     );
   }
@@ -39,7 +41,7 @@ export function StatusStepper({ status }: { status: OrderStatus }) {
               <View
                 style={[
                   styles.dot,
-                  { backgroundColor: done || active ? Colors.primary : Colors.border },
+                  { backgroundColor: done || active ? colors.primary : colors.border },
                 ]}
               >
                 <Text style={styles.dotText}>{done ? '✓' : i + 1}</Text>
@@ -48,12 +50,12 @@ export function StatusStepper({ status }: { status: OrderStatus }) {
                 <View
                   style={[
                     styles.line,
-                    { backgroundColor: done ? Colors.primary : Colors.border },
+                    { backgroundColor: done ? colors.primary : colors.border },
                   ]}
                 />
               )}
             </View>
-            <Text style={[styles.label, (active || done) && styles.labelActive]}>
+            <Text style={[styles.label, { color: colors.muted }, (active || done) && [styles.labelActive, { color: colors.text }]]}>
               {LABELS[step]}
             </Text>
           </View>
@@ -75,13 +77,13 @@ const styles = StyleSheet.create({
   },
   dotText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
   line: { width: 2, height: 28 },
-  label: { paddingTop: 4, paddingBottom: 20, color: Colors.muted, fontSize: 14 },
-  labelActive: { color: Colors.text, fontWeight: '900' },
+  label: { paddingTop: 4, paddingBottom: 20, fontSize: 14 },
+  labelActive: { fontWeight: '900' },
   cancelledBox: {
     backgroundColor: '#FEE2E2',
     borderRadius: 18,
     padding: 16,
   },
-  cancelledTitle: { color: Colors.danger, fontWeight: '900', fontSize: 16 },
-  cancelledNote: { color: Colors.muted, marginTop: 4 },
+  cancelledTitle: { fontWeight: '900', fontSize: 16 },
+  cancelledNote: { marginTop: 4 },
 });

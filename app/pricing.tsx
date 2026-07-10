@@ -12,9 +12,11 @@ import { Screen } from "@/components/Screen";
 import { PricingCard } from "@/components/PricingCard";
 import { createCheckoutSession } from "@/services/subscriptionService";
 import { PlanId } from "@/constants/plans";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Pricing() {
+  const { colors } = useTheme();
+
   const choose = async (plan: PlanId) => {
     try {
       const url = await createCheckoutSession(plan);
@@ -30,16 +32,18 @@ export default function Pricing() {
       {router.canGoBack() && (
         <Pressable
           onPress={() => router.back()}
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: colors.card || "#f5f5f7" }]}
           hitSlop={10}
         >
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
       )}
 
       <View style={styles.header}>
-        <Text style={styles.title}>Choose your plan</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Choose your plan
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>
           Pick a plan based on how many product photos you need. 15 photos is
           the maximum.
         </Text>
@@ -55,9 +59,9 @@ export default function Pricing() {
         <Ionicons
           name="shield-checkmark-outline"
           size={16}
-          color={Colors.muted}
+          color={colors.muted}
         />
-        <Text style={styles.footerNoteText}>
+        <Text style={[styles.footerNoteText, { color: colors.muted }]}>
           Cancel or change your plan anytime from Billing
         </Text>
       </View>
@@ -70,7 +74,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -81,7 +84,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     alignSelf: "flex-start",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -90,18 +92,15 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: "700",
-    color: Colors.primary ?? "#22c55e",
   },
   title: {
     fontSize: 28,
     fontWeight: "800",
-    color: Colors.text,
     letterSpacing: -0.5,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.muted,
     lineHeight: 20,
   },
   plansWrap: {
@@ -116,6 +115,5 @@ const styles = StyleSheet.create({
   },
   footerNoteText: {
     fontSize: 12,
-    color: Colors.muted,
   },
 });

@@ -30,10 +30,11 @@ import { Screen } from "@/components/Screen";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useTranslation } from "react-i18next";
 
 function SkeletonCard() {
+  const { colors } = useTheme();
   const pulse = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -57,12 +58,12 @@ function SkeletonCard() {
 
   return (
     <View style={styles.gridItem}>
-      <Animated.View style={[styles.skeletonImage, { opacity: pulse }]} />
-      <Animated.View style={[styles.skeletonLine, styles.skeletonLineWide, { opacity: pulse }]} />
-      <Animated.View style={[styles.skeletonLine, styles.skeletonLineNarrow, { opacity: pulse }]} />
+      <Animated.View style={[styles.skeletonImage, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
+      <Animated.View style={[styles.skeletonLine, styles.skeletonLineWide, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
+      <Animated.View style={[styles.skeletonLine, styles.skeletonLineNarrow, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
       <View style={styles.cardActions}>
-        <Animated.View style={[styles.skeletonButton, { opacity: pulse }]} />
-        <Animated.View style={[styles.skeletonButton, { opacity: pulse }]} />
+        <Animated.View style={[styles.skeletonButton, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
+        <Animated.View style={[styles.skeletonButton, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
       </View>
     </View>
   );
@@ -70,6 +71,7 @@ function SkeletonCard() {
 
 export default function Products() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -84,38 +86,38 @@ export default function Products() {
 
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const closeModal = () => {
-  Animated.timing(sheetTranslateY, {
-    toValue: 600,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => {
-    sheetTranslateY.setValue(0);
-    setFormVisible(false);
-  });
-};
+    Animated.timing(sheetTranslateY, {
+      toValue: 600,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      sheetTranslateY.setValue(0);
+      setFormVisible(false);
+    });
+  };
 
-const panResponder = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return gestureState.dy > 6 && Math.abs(gestureState.dx) < 20;
-    },
-    onPanResponderMove: (_, gestureState) => {
-      if (gestureState.dy > 0) {
-        sheetTranslateY.setValue(gestureState.dy);
-      }
-    },
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dy > 120 || gestureState.vy > 0.8) {
-        closeModal();
-      } else {
-        Animated.spring(sheetTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  })
-).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return gestureState.dy > 6 && Math.abs(gestureState.dx) < 20;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          sheetTranslateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120 || gestureState.vy > 0.8) {
+          closeModal();
+        } else {
+          Animated.spring(sheetTranslateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const uid = auth.currentUser?.uid;
 
@@ -135,12 +137,54 @@ const panResponder = useRef(
     })();
   }, []);
 
-  const pick = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+  const pick = () => {
+    Alert.alert(
+      "Ajouter une photo",
+      "Choisissez une option",
+      [
+        {
+          text: "Prendre une photo",
+          onPress: takePhoto,
+        },
+        {
+          text: "Choisir depuis la galerie",
+          onPress: pickFromGallery,
+        },
+        {
+          text: "Annuler",
+          style: "cancel",
+        },
+      ]
+    );
+  };
+
+  const pickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.75,
     });
-    if (!res.canceled) setImage(res.assets[0].uri);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.75,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
 
   const clearForm = () => {
@@ -224,24 +268,24 @@ const panResponder = useRef(
   const usagePct = Math.min(products.length / limit, 1);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <Screen>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           {/* Usage indicator */}
-          <View style={styles.usageCard}>
+          <View style={[styles.usageCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
             <View style={styles.usageTop}>
-              <Text style={styles.usageText}>
+              <Text style={[styles.usageText, { color: colors.text }]}>
                 {t("products.usageText", { count: products.length, limit })}
               </Text>
-              <Text style={styles.usagePlan}>
+              <Text style={[styles.usagePlan, { color: colors.primary }]}>
                 {t("products.usagePlan", { plan: plan.toUpperCase() })}
               </Text>
             </View>
-            <View style={styles.usageTrack}>
-              <View style={[styles.usageFill, { width: `${usagePct * 100}%` }]} />
+            <View style={[styles.usageTrack, { backgroundColor: colors.border || "rgba(0,0,0,0.08)" }]}>
+              <View style={[styles.usageFill, { width: `${usagePct * 100}%`, backgroundColor: colors.primary }]} />
             </View>
           </View>
 
@@ -254,11 +298,13 @@ const panResponder = useRef(
             </View>
           ) : products.length === 0 ? (
             <View style={styles.emptyState}>
-              <View style={styles.emptyIconWrap}>
-                <Ionicons name="cube-outline" size={32} color={Colors.muted} />
+              <View style={[styles.emptyIconWrap, { backgroundColor: colors.card || "#f5f5f7" }]}>
+                <Ionicons name="cube-outline" size={32} color={colors.muted} />
               </View>
-              <Text style={styles.emptyTitle}>{t("products.noProducts")}</Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
+                {t("products.noProducts")}
+              </Text>
+              <Text style={[styles.emptyText, { color: colors.muted }]}>
                 {t("products.noProductsText")}
               </Text>
             </View>
@@ -272,10 +318,11 @@ const panResponder = useRef(
                       onPress={() => startEdit(p)}
                       style={({ pressed }) => [
                         styles.iconButton,
+                        { backgroundColor: colors.card || "#f5f5f7" },
                         pressed && styles.pressed,
                       ]}
                     >
-                      <Ionicons name="create-outline" size={16} color={Colors.text} />
+                      <Ionicons name="create-outline" size={16} color={colors.text} />
                     </Pressable>
                     <Pressable
                       onPress={() => remove(p.productId)}
@@ -298,7 +345,11 @@ const panResponder = useRef(
       {/* FAB */}
       <Pressable
         onPress={openAddForm}
-        style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}
+        style={({ pressed }) => [
+          styles.fab, 
+          { backgroundColor: colors.primary },
+          pressed && { opacity: 0.85 }
+        ]}
       >
         <Ionicons name="add" size={26} color="#fff" />
       </Pressable>
@@ -311,19 +362,19 @@ const panResponder = useRef(
         onRequestClose={() => setFormVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
+          <View style={[styles.modalSheet, { backgroundColor: colors.background || "#fff" }]}>
+            <View style={[styles.modalHandle, { backgroundColor: colors.border || "rgba(0,0,0,0.15)" }]} />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
                 {editingId ? t("products.editProduct") : t("products.addProduct")}
               </Text>
               <Pressable
                 onPress={() => setFormVisible(false)}
                 hitSlop={10}
-                style={styles.modalClose}
+                style={[styles.modalClose, { backgroundColor: colors.card || "#f5f5f7" }]}
               >
-                <Ionicons name="close" size={22} color={Colors.text} />
+                <Ionicons name="close" size={22} color={colors.text} />
               </Pressable>
             </View>
 
@@ -334,26 +385,35 @@ const panResponder = useRef(
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>{t("products.photo")}</Text>
+                <Text style={[styles.fieldLabel, { color: colors.text }]}>
+                  {t("products.photo")}
+                </Text>
                 <Pressable onPress={pick} style={styles.photoPicker}>
                   {image ? (
                     <View style={styles.photoPreviewWrap}>
-                      <Image source={{ uri: image }} style={styles.photoPreview} />
-                      <View style={styles.photoEditBadge}>
+                      <Image source={{ uri: image }} style={[styles.photoPreview, { backgroundColor: colors.card || "#f5f5f7" }]} />
+                      <View style={[styles.photoEditBadge, { backgroundColor: colors.primary, borderColor: colors.background || "#fff" }]}>
                         <Ionicons name="camera" size={14} color="#fff" />
                       </View>
                     </View>
                   ) : (
-                    <View style={styles.photoPlaceholder}>
-                      <Ionicons name="camera-outline" size={26} color={Colors.muted} />
-                      <Text style={styles.photoPlaceholderText}>{t("products.addPhoto")}</Text>
+                    <View style={[styles.photoPlaceholder, { 
+                      backgroundColor: colors.card || "#f5f5f7",
+                      borderColor: colors.border || "rgba(0,0,0,0.08)"
+                    }]}>
+                      <Ionicons name="camera-outline" size={26} color={colors.muted} />
+                      <Text style={[styles.photoPlaceholderText, { color: colors.muted }]}>
+                        {t("products.addPhoto")}
+                      </Text>
                     </View>
                   )}
                 </Pressable>
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>{t("products.productName")}</Text>
+                <Text style={[styles.fieldLabel, { color: colors.text }]}>
+                  {t("products.productName")}
+                </Text>
                 <Input 
                   placeholder={t("products.productName")} 
                   value={name} 
@@ -362,7 +422,9 @@ const panResponder = useRef(
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>{t("products.price")}</Text>
+                <Text style={[styles.fieldLabel, { color: colors.text }]}>
+                  {t("products.price")}
+                </Text>
                 <Input
                   placeholder={`${t("products.price")} (${currency})`}
                   keyboardType="decimal-pad"
@@ -372,7 +434,9 @@ const panResponder = useRef(
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>{t("products.description")}</Text>
+                <Text style={[styles.fieldLabel, { color: colors.text }]}>
+                  {t("products.description")}
+                </Text>
                 <Input 
                   placeholder={t("products.description")} 
                   value={desc} 
@@ -399,7 +463,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scrollContent: { paddingBottom: 100 },
   usageCard: {
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: RADIUS,
     padding: 14,
     marginBottom: 20,
@@ -410,49 +473,71 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  usageText: { fontSize: 13, fontWeight: "700", color: Colors.text },
+  usageText: { 
+    fontSize: 13, 
+    fontWeight: "700" 
+  },
   usagePlan: {
     fontSize: 11,
     fontWeight: "800",
-    color: Colors.primary ?? "#22c55e",
     letterSpacing: 0.5,
   },
   usageTrack: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.08)",
     overflow: "hidden",
   },
   usageFill: {
     height: "100%",
-    backgroundColor: Colors.primary ?? "#22c55e",
     borderRadius: 3,
   },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  gridItem: { width: "47.5%" },
-  cardActions: { flexDirection: "row", gap: 8, marginTop: 8 },
+  grid: { 
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    gap: 12 
+  },
+  gridItem: { 
+    width: "47.5%" 
+  },
+  cardActions: { 
+    flexDirection: "row", 
+    gap: 8, 
+    marginTop: 8 
+  },
   iconButton: {
     flex: 1,
     height: 34,
     borderRadius: 10,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
     justifyContent: "center",
   },
-  iconButtonDanger: { backgroundColor: "rgba(239,68,68,0.1)" },
-  pressed: { opacity: 0.7 },
-  emptyState: { alignItems: "center", paddingVertical: 60 },
+  iconButtonDanger: { 
+    backgroundColor: "rgba(239,68,68,0.1)" 
+  },
+  pressed: { 
+    opacity: 0.7 
+  },
+  emptyState: { 
+    alignItems: "center", 
+    paddingVertical: 60 
+  },
   emptyIconWrap: {
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
   },
-  emptyTitle: { fontSize: 16, fontWeight: "800", color: Colors.text, marginBottom: 4 },
-  emptyText: { fontSize: 13, color: Colors.muted, textAlign: "center" },
+  emptyTitle: { 
+    fontSize: 16, 
+    fontWeight: "800", 
+    marginBottom: 4 
+  },
+  emptyText: { 
+    fontSize: 13, 
+    textAlign: "center" 
+  },
   fab: {
     position: "absolute",
     right: 20,
@@ -460,7 +545,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -476,7 +560,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalSheet: {
-    backgroundColor: Colors.background ?? "#fff",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 20,
@@ -487,7 +570,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.15)",
     alignSelf: "center",
     marginBottom: 16,
   },
@@ -497,29 +579,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 18,
   },
-  modalTitle: { fontSize: 18, fontWeight: "800", color: Colors.text },
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: "800" 
+  },
   modalClose: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
     justifyContent: "center",
   },
-  fieldWrap: { marginBottom: 16 },
+  fieldWrap: { 
+    marginBottom: 16 
+  },
   fieldLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 6,
   },
-  photoPicker: { alignSelf: "flex-start" },
-  photoPreviewWrap: { position: "relative" },
+  photoPicker: { 
+    alignSelf: "flex-start" 
+  },
+  photoPreviewWrap: { 
+    position: "relative" 
+  },
   photoPreview: {
     width: 96,
     height: 96,
     borderRadius: 16,
-    backgroundColor: Colors.card ?? "#f5f5f7",
   },
   photoEditBadge: {
     position: "absolute",
@@ -528,19 +616,15 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: Colors.background ?? "#fff",
   },
   photoPlaceholder: {
     width: 96,
     height: 96,
     borderRadius: 16,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.08)",
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
@@ -549,27 +633,27 @@ const styles = StyleSheet.create({
   photoPlaceholderText: {
     fontSize: 11,
     fontWeight: "600",
-    color: Colors.muted,
   },
   skeletonImage: {
     width: "100%",
     aspectRatio: 1,
     borderRadius: RADIUS - 4,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.1)",
     marginBottom: 10,
   },
   skeletonLine: {
     height: 12,
     borderRadius: 6,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.1)",
     marginBottom: 6,
   },
-  skeletonLineWide: { width: "80%" },
-  skeletonLineNarrow: { width: "45%" },
+  skeletonLineWide: { 
+    width: "80%" 
+  },
+  skeletonLineNarrow: { 
+    width: "45%" 
+  },
   skeletonButton: {
     flex: 1,
     height: 34,
     borderRadius: 10,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.1)",
   },
 });

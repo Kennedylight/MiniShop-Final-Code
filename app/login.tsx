@@ -16,11 +16,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
 import { loginOwner } from "@/services/authService";
-import { Colors } from "@/constants/colors";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Login() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,53 +49,53 @@ export default function Login() {
       >
         {/* Logo / Icon */}
         <View style={styles.logoWrap}>
-          <View style={styles.logoCircle}>
+          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
             <Ionicons name="storefront" size={30} color="#fff" />
           </View>
         </View>
 
         {/* Centered header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{t("auth.login.title")}</Text>
-          <Text style={styles.subtitle}>{t("auth.login.subtitle")}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t("auth.login.title")}</Text>
+          <Text style={[styles.subtitle, { color: colors.muted }]}>{t("auth.login.subtitle")}</Text>
         </View>
 
         {/* Email field */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.login.email")}</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t("auth.login.email")}</Text>
           <View style={styles.inputWrap}>
             <Ionicons
               name="mail-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.login.emailPlaceholder")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
               value={email}
               onChangeText={setEmail}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
             />
           </View>
         </View>
 
         {/* Password field */}
         <View style={styles.field}>
-          <Text style={styles.label}>{t("auth.login.password")}</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t("auth.login.password")}</Text>
           <View style={styles.inputWrap}>
             <Ionicons
               name="lock-closed-outline"
               size={19}
-              color={Colors.muted}
+              color={colors.muted}
               style={styles.inputIcon}
             />
             <TextInput
               placeholder={t("auth.login.passwordPlaceholder")}
-              placeholderTextColor={Colors.muted}
+              placeholderTextColor={colors.muted}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               value={password}
@@ -109,7 +110,7 @@ export default function Login() {
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                 size={20}
-                color={Colors.muted}
+                color={colors.muted}
               />
             </Pressable>
           </View>
@@ -121,7 +122,7 @@ export default function Login() {
           style={styles.forgotWrap}
           hitSlop={8}
         >
-          <Text style={styles.forgotText}>
+          <Text style={[styles.forgotText, { color: colors.primary }]}> 
             {t("auth.login.forgotPassword")}
           </Text>
         </Pressable>
@@ -135,9 +136,9 @@ export default function Login() {
 
         {/* Sign up link */}
         <View style={styles.signupRow}>
-          <Text style={styles.signupText}>{t("auth.login.noAccount")} </Text>
+          <Text style={[styles.signupText, { color: colors.muted }]}>{t("auth.login.noAccount")} </Text>
           <Pressable onPress={() => router.push("/signup")} hitSlop={8}>
-            <Text style={styles.signupLink}>{t("auth.login.createOne")}</Text>
+            <Text style={[styles.signupLink, { color: colors.primary }]}>{t("auth.login.createOne")}</Text>
           </Pressable>
         </View>
       </KeyboardAwareScrollView>
@@ -160,7 +161,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -171,13 +171,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: Colors.text,
     textAlign: "center",
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.muted,
     marginTop: 6,
     textAlign: "center",
   },
@@ -187,16 +185,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     marginBottom: 6,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.06)",
     paddingHorizontal: 14,
   },
   inputIcon: {
@@ -206,7 +201,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 15,
-    color: Colors.text,
   },
   eyeButton: {
     position: "absolute",
@@ -220,7 +214,6 @@ const styles = StyleSheet.create({
   forgotText: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.primary ?? "#22c55e",
   },
   signupRow: {
     flexDirection: "row",
@@ -229,11 +222,9 @@ const styles = StyleSheet.create({
   },
   signupText: {
     fontSize: 14,
-    color: Colors.muted,
   },
   signupLink: {
     fontSize: 14,
     fontWeight: "700",
-    color: Colors.primary ?? "#22c55e",
   },
 });

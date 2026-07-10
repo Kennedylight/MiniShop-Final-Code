@@ -17,7 +17,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/components/Button";
 import { LanguagePicker } from "@/components/LanguagePicker";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -67,6 +67,7 @@ const SLIDES: Slide[] = [
 
 export default function Index() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [showSplash, setShowSplash] = useState(true);
   const splashOpacity = useRef(new Animated.Value(1)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
@@ -114,19 +115,46 @@ export default function Index() {
   const isLast = activeIndex === SLIDES.length - 1;
   const isFirst = activeIndex === 0;
 
+  // Créer un style dynamique pour les éléments qui utilisent colors.primary
+  const dynamicStyles = {
+    dotActive: {
+      backgroundColor: colors.primary,
+    },
+    iconCircle: {
+      backgroundColor: colors.primary,
+    },
+    bulletIconWrap: {
+      backgroundColor: colors.card === '#1a1a1a' ? '#2a2a2a' : '#ffffff',
+    },
+    bulletRow: {
+      backgroundColor: colors.card,
+    },
+    loginLinkBold: {
+      color: colors.primary,
+    },
+  };
+
   return (
-    <View style={styles.root}>
-      {/* Onboarding */}
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <Animated.View style={[styles.flex, { opacity: contentOpacity }]}>
         <SafeAreaView style={styles.flex} edges={["top", "bottom"]}>
           <View style={styles.topBar}>
             <View style={styles.dotsRow}>
               {SLIDES.map((_, i) => (
-                <View key={i} style={[styles.dot, i === activeIndex && styles.dotActive]} />
+                <View 
+                  key={i} 
+                  style={[
+                    styles.dot, 
+                    i === activeIndex && styles.dotActive,
+                    i === activeIndex && { backgroundColor: colors.primary }
+                  ]} 
+                />
               ))}
             </View>
             <Pressable onPress={skip} hitSlop={10}>
-              <Text style={styles.skipText}>{t("onboarding.skip")}</Text>
+              <Text style={[styles.skipText, { color: colors.muted }]}>
+                {t("onboarding.skip")}
+              </Text>
             </Pressable>
           </View>
 
@@ -144,23 +172,42 @@ export default function Index() {
             renderItem={({ item }) => (
               <View style={[styles.slide, { width }]}>
                 <View style={styles.iconStage}>
-                 
-                  <View style={styles.iconCircle}>
+                  <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
                     <Ionicons name={item.icon} size={44} color="#fff" />
                   </View>
                 </View>
 
-
-                <Text style={styles.slideTitle}>{t(item.titleKey)}</Text>
-                <Text style={styles.slideText}>{t(item.textKey)}</Text>
+                <Text style={[styles.slideTitle, { color: colors.text }]}>
+                  {t(item.titleKey)}
+                </Text>
+                <Text style={[styles.slideText, { color: colors.muted }]}>
+                  {t(item.textKey)}
+                </Text>
 
                 <View style={styles.bulletList}>
                   {item.bullets.map((b) => (
-                    <View key={b.key} style={styles.bulletRow}>
-                      <View style={styles.bulletIconWrap}>
-                        <Ionicons name={b.icon} size={16} color={Colors.primary ?? "#22c55e"} />
+                    <View 
+                      key={b.key} 
+                      style={[
+                        styles.bulletRow, 
+                        { backgroundColor: colors.card }
+                      ]}
+                    >
+                      <View 
+                        style={[
+                          styles.bulletIconWrap, 
+                          { 
+                            backgroundColor: colors.background === '#ffffff' 
+                              ? '#ffffff' 
+                              : '#2a2a2a' 
+                          }
+                        ]}
+                      >
+                        <Ionicons name={b.icon} size={16} color={colors.primary} />
                       </View>
-                      <Text style={styles.bulletText}>{t(b.key)}</Text>
+                      <Text style={[styles.bulletText, { color: colors.text }]}>
+                        {t(b.key)}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -171,12 +218,19 @@ export default function Index() {
           <View style={styles.footer}>
             <View style={styles.footerRow}>
               {!isFirst && (
-                <Pressable onPress={goBack} style={styles.backButton} hitSlop={8}>
-                  <Ionicons name="arrow-back" size={20} color={Colors.text} />
+                <Pressable 
+                  onPress={goBack} 
+                  style={[styles.backButton, { backgroundColor: colors.card }]} 
+                  hitSlop={8}
+                >
+                  <Ionicons name="arrow-back" size={20} color={colors.text} />
                 </Pressable>
               )}
               <View style={styles.nextButtonWrap}>
-                <Button title={isLast ? t("onboarding.getStarted") : t("onboarding.next")} onPress={goNext} />
+                <Button 
+                  title={isLast ? t("onboarding.getStarted") : t("onboarding.next")} 
+                  onPress={goNext} 
+                />
               </View>
             </View>
 
@@ -186,9 +240,11 @@ export default function Index() {
                 style={styles.loginLinkWrap}
                 hitSlop={8}
               >
-                <Text style={styles.loginLinkText}>
-                  {t("onboarding.alreadyHaveAccount")} {" "}
-                  <Text style={styles.loginLinkBold}>{t("onboarding.login")}</Text>
+                <Text style={[styles.loginLinkText, { color: colors.muted }]}>
+                  {t("onboarding.alreadyHaveAccount")}{" "}
+                  <Text style={[styles.loginLinkBold, { color: colors.primary }]}>
+                    {t("onboarding.login")}
+                  </Text>
                 </Text>
               </Pressable>
             )}
@@ -196,9 +252,11 @@ export default function Index() {
         </SafeAreaView>
       </Animated.View>
 
-      {/* Splash overlay */}
       {showSplash && (
-        <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+        <Animated.View 
+          style={[styles.splash, { opacity: splashOpacity, backgroundColor: colors.background }]} 
+          pointerEvents="none"
+        >
           <Image
             source={require("../assets/minishop-logo.png")}
             style={styles.splashLogo}
@@ -211,11 +269,10 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.background ?? "#fff" },
+  root: { flex: 1 },
   flex: { flex: 1 },
   splash: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.background ?? "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -232,16 +289,14 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.border ?? "rgba(0,0,0,0.1)",
+    backgroundColor: "#e5e7eb", // valeur par défaut pour éviter l'erreur
   },
   dotActive: {
     width: 20,
-    backgroundColor: Colors.primary ?? "#22c55e",
   },
   skipText: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.muted,
   },
   slide: {
     alignItems: "center",
@@ -255,33 +310,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-  iconRingOuter: {
-    position: "absolute",
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: Colors.card ?? "#f5f5f7",
-  },
- 
   iconCircle: {
     width: 76,
     height: 76,
     borderRadius: 24,
-    backgroundColor: Colors.primary ?? "#22c55e",
     alignItems: "center",
     justifyContent: "center",
   },
   slideTitle: {
     fontSize: 22,
     fontWeight: "800",
-    color: Colors.text,
     textAlign: "center",
     marginBottom: 8,
     letterSpacing: -0.3,
   },
   slideText: {
     fontSize: 14,
-    color: Colors.muted,
     textAlign: "center",
     lineHeight: 20,
     marginBottom: 20,
@@ -295,7 +339,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -304,14 +347,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 9,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
   bulletText: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.text,
     flex: 1,
   },
   footer: {
@@ -328,7 +369,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    backgroundColor: Colors.card ?? "#f5f5f7",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -340,10 +380,8 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     fontSize: 14,
-    color: Colors.muted,
   },
   loginLinkBold: {
     fontWeight: "700",
-    color: Colors.primary ?? "#22c55e",
   },
 });

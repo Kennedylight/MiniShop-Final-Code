@@ -17,12 +17,13 @@ import { getCurrentOwner } from "@/services/authService";
 import { Screen } from "@/components/Screen";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type LinkStatus = "loading" | "ready" | "signInRequired" | "profileIncomplete" | "error";
 
 export default function SharePage() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState<LinkStatus>("loading");
   const [copied, setCopied] = useState(false);
@@ -110,48 +111,58 @@ export default function SharePage() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>{t("share.title")}</Text>
-        <Text style={styles.subtitle}>{t("share.subtitle")}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {t("share.title")}
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>
+          {t("share.subtitle")}
+        </Text>
       </View>
 
       {/* QR Code */}
-      <Card style={styles.qrCard}>
+      <Card style={[styles.qrCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
         {status === "loading" ? (
           <View style={styles.qrPlaceholder}>
-            <Ionicons name="qr-code-outline" size={40} color={Colors.muted} />
+            <Ionicons name="qr-code-outline" size={40} color={colors.muted} />
           </View>
         ) : qrUrl ? (
           <Image source={{ uri: qrUrl }} style={styles.qrImage} resizeMode="contain" />
         ) : (
           <View style={styles.qrPlaceholder}>
-            <Ionicons name="alert-circle-outline" size={32} color={Colors.muted} />
-            <Text style={styles.qrErrorText}>
+            <Ionicons name="alert-circle-outline" size={32} color={colors.muted} />
+            <Text style={[styles.qrErrorText, { color: colors.muted }]}>
               {statusMessage[status as Exclude<LinkStatus, "ready">]}
             </Text>
           </View>
         )}
         {isReady && (
-          <Text style={styles.qrHint}>{t("share.scanToVisit")}</Text>
+          <Text style={[styles.qrHint, { color: colors.muted }]}>
+            {t("share.scanToVisit")}
+          </Text>
         )}
       </Card>
 
       {/* Link card with copy */}
-      <View style={styles.linkCard}>
-        <View style={styles.linkIconWrap}>
-          <Ionicons name="link-outline" size={18} color={Colors.primary ?? "#22c55e"} />
+      <View style={[styles.linkCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
+        <View style={[styles.linkIconWrap, { backgroundColor: colors.background || "#fff" }]}>
+          <Ionicons name="link-outline" size={18} color={colors.primary} />
         </View>
-        <Text style={styles.linkText} numberOfLines={1}>
+        <Text style={[styles.linkText, { color: colors.text }]} numberOfLines={1}>
           {status === "loading" ? t("share.loadingLink") : isReady ? url : statusMessage[status as Exclude<LinkStatus, "ready">]}
         </Text>
         <Pressable
           onPress={handleCopy}
           hitSlop={8}
-          style={({ pressed }) => [styles.copyButton, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [
+            styles.copyButton, 
+            { backgroundColor: colors.background || "#fff" },
+            pressed && { opacity: 0.7 }
+          ]}
         >
           <Ionicons
             name={copied ? "checkmark" : "copy-outline"}
             size={18}
-            color={copied ? Colors.primary ?? "#22c55e" : Colors.text}
+            color={copied ? colors.primary : colors.text}
           />
         </Pressable>
       </View>
@@ -175,11 +186,17 @@ export default function SharePage() {
           style={({ pressed }) => [
             styles.actionCard,
             styles.shareCard,
+            { 
+              backgroundColor: colors.card || "#f5f5f7",
+              borderColor: colors.border || "rgba(0,0,0,0.06)"
+            },
             pressed && { opacity: 0.85 },
           ]}
         >
-          <Ionicons name="share-social-outline" size={22} color={Colors.text} />
-          <Text style={styles.shareText}>{t("share.moreOptions")}</Text>
+          <Ionicons name="share-social-outline" size={22} color={colors.text} />
+          <Text style={[styles.shareText, { color: colors.text }]}>
+            {t("share.moreOptions")}
+          </Text>
         </Pressable>
       </View>
     </Screen>
@@ -190,17 +207,45 @@ const RADIUS = 18;
 
 const styles = StyleSheet.create({
   header: { marginBottom: 20 },
-  title: { fontSize: 26, fontWeight: "800", color: Colors.text, letterSpacing: -0.3 },
-  subtitle: { fontSize: 14, color: Colors.muted, marginTop: 4 },
-  qrCard: { alignItems: "center", borderRadius: RADIUS, paddingVertical: 24, marginBottom: 16 },
-  qrImage: { width: 180, height: 180 },
-  qrPlaceholder: { width: 180, height: 180, alignItems: "center", justifyContent: "center", gap: 8 },
-  qrErrorText: { fontSize: 12, color: Colors.muted, textAlign: "center", paddingHorizontal: 12 },
-  qrHint: { fontSize: 13, fontWeight: "600", color: Colors.muted, marginTop: 14 },
+  title: { 
+    fontSize: 26, 
+    fontWeight: "800", 
+    letterSpacing: -0.3 
+  },
+  subtitle: { 
+    fontSize: 14, 
+    marginTop: 4 
+  },
+  qrCard: { 
+    alignItems: "center", 
+    borderRadius: RADIUS, 
+    paddingVertical: 24, 
+    marginBottom: 16 
+  },
+  qrImage: { 
+    width: 180, 
+    height: 180 
+  },
+  qrPlaceholder: { 
+    width: 180, 
+    height: 180, 
+    alignItems: "center", 
+    justifyContent: "center", 
+    gap: 8 
+  },
+  qrErrorText: { 
+    fontSize: 12, 
+    textAlign: "center", 
+    paddingHorizontal: 12 
+  },
+  qrHint: { 
+    fontSize: 13, 
+    fontWeight: "600", 
+    marginTop: 14 
+  },
   linkCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card ?? "#f5f5f7",
     borderRadius: RADIUS,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -211,27 +256,46 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: Colors.background ?? "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
-  linkText: { flex: 1, fontSize: 14, fontWeight: "700", color: Colors.text },
+  linkText: { 
+    flex: 1, 
+    fontSize: 14, 
+    fontWeight: "700" 
+  },
   copyButton: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: Colors.background ?? "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
-  actionsRow: { flexDirection: "row", gap: 12 },
-  actionCard: { flex: 1, borderRadius: RADIUS, paddingVertical: 16, alignItems: "center", justifyContent: "center", gap: 6 },
-  whatsappCard: { backgroundColor: "#25D366" },
-  whatsappText: { fontSize: 13, fontWeight: "700", color: "#fff" },
-  shareCard: {
-    backgroundColor: Colors.card ?? "#f5f5f7",
-    borderWidth: 1,
-    borderColor: Colors.border ?? "rgba(0,0,0,0.06)",
+  actionsRow: { 
+    flexDirection: "row", 
+    gap: 12 
   },
-  shareText: { fontSize: 13, fontWeight: "700", color: Colors.text },
+  actionCard: { 
+    flex: 1, 
+    borderRadius: RADIUS, 
+    paddingVertical: 16, 
+    alignItems: "center", 
+    justifyContent: "center", 
+    gap: 6 
+  },
+  whatsappCard: { 
+    backgroundColor: "#25D366" 
+  },
+  whatsappText: { 
+    fontSize: 13, 
+    fontWeight: "700", 
+    color: "#fff" 
+  },
+  shareCard: {
+    borderWidth: 1,
+  },
+  shareText: { 
+    fontSize: 13, 
+    fontWeight: "700" 
+  },
 });

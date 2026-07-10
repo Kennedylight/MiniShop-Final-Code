@@ -122,6 +122,7 @@ share: {
   whatsapp: "WhatsApp",
   moreOptions: "More options",
 },
+
   "products": {
     "title": "Products",
     "usageText": "{{count}}/{{limit}} products used",
@@ -153,10 +154,11 @@ orders: {
   sendTracking: "Send tracking",
   markAs: "Mark {{status}}",
   emptyTitle: "No orders yet",
+  whatsappMessage: "Hi {{name}} 👋,\n\nYou can track your order in real time by clicking the link below:\n{{link}}\n\nThank you for your trust! 🙏",
+
   emptyText: "Orders from your store will show up here",
   noPhoneTitle: "No phone number",
   noPhoneText: "This order has no WhatsApp number available.",
-  whatsappMessage: "Hi {{name}}, this is regarding your order #{{orderId}}.",
   whatsappUnavailableTitle: "WhatsApp not available",
   whatsappUnavailableText: "Could not open WhatsApp for this number.",
   trackingMessage: "Hi {{name}}, track your order here: {{url}}",
@@ -171,8 +173,9 @@ orders: {
     cancelled: "Cancelled",
   },
 },
-  dashboard: {
-    miniShop: "MiniShop",
+ // en.ts — à ajouter DANS ton objet dashboard existant
+dashboard: {
+   miniShop: "MiniShop",
     products: "Products",
     orders: "Orders",
     share: "Share",
@@ -184,7 +187,39 @@ orders: {
     logOutAction: "Log out",
     unauthorized: "Unauthorized. Admin access required.",
     checkingAccess: "Checking access…",
+
+  greetingEyebrow: "Dashboard",
+
+  title: "Your store",
+  helloName: "Hello, {{name}}",
+  storeReady: "Your store is ready",
+  trialBadge: "{{days}}d left in trial",
+  trialTitle: "{{days}} days left in your trial",
+  trialHint: "Upgrade anytime to keep full access",
+  trialCta: "Upgrade now",
+  trialExpiredTitle: "Your trial has ended",
+  noticeSubscription: "Subscribe to keep managing your store",
+  stats: {
+    ordersTotal: "Total orders",
+    ordersActive: "Active orders",
+    revenue: "Revenue",
+    products: "Products",
   },
+  ordersChartTitle: "Orders (14 days)",
+  last14: "Last 14 days",
+  statusBreakdown: "Status breakdown",
+  shopLink: "Store link",
+  photosHint: "{{remaining}} slots remaining",
+},
+
+// nouvelles clés racines (n'existaient pas encore)
+empty: {
+  noResults: "No data yet",
+},
+
+nav: {
+  products: "Products",
+},
   shop: {
     notFound: "Store not found.",
     unavailableTitle: "Store unavailable",
@@ -217,5 +252,6 @@ orders: {
   },
   common: {
     selectLanguage: "Select language",
+    all: "See all",
   },
 };

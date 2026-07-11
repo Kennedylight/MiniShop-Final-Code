@@ -96,6 +96,13 @@ export default {
     currencyConfirmAction: "Confirm",
     currencyErrorTitle: "Error",
     currencyErrorMessage: "Could not set the currency. Please try again.",
+    fixLegacyHint: "Products or orders created before this currency was set may still be labeled in a different currency.",
+    fixLegacyAction: "Fix my old products/orders",
+    fixLegacyConfirmTitle: "Fix legacy data?",
+    fixLegacyConfirmMessage: "No amount will change: only the currency label of your existing products and orders will be aligned with your current currency.",
+    fixLegacyDoneTitle: "Fix complete",
+    fixLegacyDoneMessage: "{{products}} product(s) and {{orders}} order(s) updated.",
+    fixLegacyErrorMessage: "Could not fix the data. Please try again.",
   },
   // en.ts
 billing: {

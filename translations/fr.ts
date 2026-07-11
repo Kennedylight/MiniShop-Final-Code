@@ -104,6 +104,13 @@ export default {
     currencyConfirmAction: "Confirmer",
     currencyErrorTitle: "Erreur",
     currencyErrorMessage: "Impossible de définir la devise. Réessayez.",
+    fixLegacyHint: "Vos produits ou commandes créés avant la mise en place de cette devise peuvent être restés étiquetés dans une autre monnaie.",
+    fixLegacyAction: "Corriger mes anciens produits/commandes",
+    fixLegacyConfirmTitle: "Corriger les anciennes données ?",
+    fixLegacyConfirmMessage: "Aucun montant ne sera changé : seule l'étiquette de devise de vos produits et commandes existants sera alignée sur votre devise actuelle.",
+    fixLegacyDoneTitle: "Correction terminée",
+    fixLegacyDoneMessage: "{{products}} produit(s) et {{orders}} commande(s) mis à jour.",
+    fixLegacyErrorMessage: "Impossible de corriger les données. Réessayez.",
   },
   // fr.ts
   billing: {

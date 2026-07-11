@@ -9,6 +9,7 @@ import { Button } from '@/components/Button';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { setOwnerCurrencyOnce } from '@/services/authService';
+import { fixLegacyCurrency } from '@/services/currencyMigrationService';
 import { DEFAULT_CURRENCY } from '@/constants/currency';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +27,7 @@ export default function Profile() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [pendingCurrency, setPendingCurrency] = useState(DEFAULT_CURRENCY);
   const [savingCurrency, setSavingCurrency] = useState(false);
+  const [fixingLegacy, setFixingLegacy] = useState(false);
 
   const loadCurrency = () => {
     const uid = auth.currentUser?.uid;
@@ -65,6 +67,36 @@ export default function Profile() {
     );
   };
 
+  const confirmFixLegacy = () => {
+    if (!currency) return;
+    Alert.alert(
+      t('profile.fixLegacyConfirmTitle'),
+      t('profile.fixLegacyConfirmMessage'),
+      [
+        { text: t('products.cancel'), style: 'cancel' },
+        {
+          text: t('profile.fixLegacyAction'),
+          onPress: async () => {
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            try {
+              setFixingLegacy(true);
+              const { products, orders } = await fixLegacyCurrency(uid, currency);
+              Alert.alert(
+                t('profile.fixLegacyDoneTitle'),
+                t('profile.fixLegacyDoneMessage', { products, orders }),
+              );
+            } catch {
+              Alert.alert(t('profile.currencyErrorTitle'), t('profile.fixLegacyErrorMessage'));
+            } finally {
+              setFixingLegacy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <Screen>
       <Text style={[styles.title, { color: colors.text }]}>{t('profile.title')}</Text>
@@ -77,10 +109,20 @@ export default function Profile() {
       <View style={styles.section}>
         <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.currency')}</Text>
         {currency ? (
-          <View style={[styles.currencyLockedRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
-            <Ionicons name="lock-closed" size={16} color={colors.muted} />
-            <Text style={[styles.currencyLockedText, { color: colors.text }]}>{currency}</Text>
-          </View>
+          <>
+            <View style={[styles.currencyLockedRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+              <Ionicons name="lock-closed" size={16} color={colors.muted} />
+              <Text style={[styles.currencyLockedText, { color: colors.text }]}>{currency}</Text>
+            </View>
+            <Text style={[styles.currencyHint, { color: colors.muted }]}>
+              {t('profile.fixLegacyHint')}
+            </Text>
+            <Button
+              title={t('profile.fixLegacyAction')}
+              onPress={confirmFixLegacy}
+              loading={fixingLegacy}
+            />
+          </>
         ) : (
           <>
             <CurrencyPicker value={pendingCurrency} onChange={setPendingCurrency} />

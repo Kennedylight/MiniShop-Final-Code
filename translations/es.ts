@@ -97,6 +97,13 @@ export default {
     currencyConfirmAction: "Confirmar",
     currencyErrorTitle: "Error",
     currencyErrorMessage: "No se pudo definir la moneda. Inténtalo de nuevo.",
+    fixLegacyHint: "Los productos o pedidos creados antes de definir esta moneda pueden haber quedado etiquetados en otra moneda.",
+    fixLegacyAction: "Corregir mis productos/pedidos antiguos",
+    fixLegacyConfirmTitle: "¿Corregir los datos antiguos?",
+    fixLegacyConfirmMessage: "Ningún monto cambiará: solo se alineará la etiqueta de moneda de tus productos y pedidos existentes con tu moneda actual.",
+    fixLegacyDoneTitle: "Corrección completada",
+    fixLegacyDoneMessage: "{{products}} producto(s) y {{orders}} pedido(s) actualizados.",
+    fixLegacyErrorMessage: "No se pudieron corregir los datos. Inténtalo de nuevo.",
   },
 
   // es.ts — à ajouter DANS ton objet dashboard existant

@@ -58,6 +58,7 @@ export default {
       email: "Email",
       whatsapp: "WhatsApp number",
       currency: "Select your store currency.",
+      currencyLocked: "This choice is final: the currency cannot be changed afterwards.",
       password: "Password",
       passwordPlaceholder: "••••••••",
       createAccount: "Create Account",
@@ -88,6 +89,13 @@ export default {
     saved: "Saved",
     language: "Language",
     profileUpdated: "Shop profile updated.",
+    currency: "Shop currency",
+    currencyHint: "This choice is final: the currency cannot be changed afterwards.",
+    currencyConfirmTitle: "Confirm currency",
+    currencyConfirmMessage: "You are about to set {{currency}} as your shop's currency. This choice is final and cannot be changed later. Continue?",
+    currencyConfirmAction: "Confirm",
+    currencyErrorTitle: "Error",
+    currencyErrorMessage: "Could not set the currency. Please try again.",
   },
   // en.ts
 billing: {
@@ -96,6 +104,7 @@ billing: {
   currentPlan: "Current plan",
   photoLimit: "Up to {{count}} product photos",
   manage: "Manage",
+  noPlan: "No plan",
   changePlan: "Change plan",
   changePlanSubtitle: "Upgrade or downgrade anytime",
   paymentInvoices: "Payment & invoices",
@@ -143,7 +152,10 @@ share: {
     "delete": "Delete",
     "cancel": "Cancel",
     "productError": "Product error",
-    "loginRequired": "Login required"
+    "loginRequired": "Login required",
+    "currencyRequiredTitle": "Currency not set",
+    "currencyRequiredMessage": "Set your shop's currency in your profile before adding products. This choice will be final.",
+    "setCurrency": "Set currency"
   },
 // en.ts
 orders: {

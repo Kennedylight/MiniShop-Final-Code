@@ -58,6 +58,7 @@ export default {
       email: "Correo electrónico",
       whatsapp: "Número de WhatsApp",
       currency: "Selecciona la moneda de tu tienda.",
+      currencyLocked: "Esta elección es definitiva: la moneda no podrá modificarse después.",
       password: "Contraseña",
       passwordPlaceholder: "••••••••",
       createAccount: "Crear cuenta",
@@ -89,6 +90,13 @@ export default {
     save: "Guardar perfil",
     saved: "Guardado",
     profileUpdated: "Perfil de la tienda actualizado.",
+    currency: "Moneda de la tienda",
+    currencyHint: "Esta elección es definitiva: la moneda no podrá modificarse después.",
+    currencyConfirmTitle: "Confirmar moneda",
+    currencyConfirmMessage: "Vas a definir {{currency}} como moneda de tu tienda. Esta elección es definitiva y no podrá cambiarse después. ¿Continuar?",
+    currencyConfirmAction: "Confirmar",
+    currencyErrorTitle: "Error",
+    currencyErrorMessage: "No se pudo definir la moneda. Inténtalo de nuevo.",
   },
 
   // es.ts — à ajouter DANS ton objet dashboard existant
@@ -144,6 +152,7 @@ export default {
     currentPlan: "Plan actual",
     photoLimit: "Hasta {{count}} fotos de producto",
     manage: "Gestionar",
+    noPlan: "Ningún plan",
     changePlan: "Cambiar plan",
     changePlanSubtitle: "Mejora o reduce en cualquier momento",
     paymentInvoices: "Pago y facturas",
@@ -221,6 +230,9 @@ export default {
     cancel: "Cancelar",
     productError: "Error de producto",
     loginRequired: "Inicio de sesión requerido",
+    currencyRequiredTitle: "Moneda no definida",
+    currencyRequiredMessage: "Define la moneda de tu tienda en tu perfil antes de agregar productos. Esta elección será definitiva.",
+    setCurrency: "Definir moneda",
   },
 
   shop: {

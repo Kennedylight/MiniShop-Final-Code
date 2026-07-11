@@ -7,6 +7,9 @@ import { Screen } from '@/components/Screen';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { LanguagePicker } from '@/components/LanguagePicker';
+import { CurrencyPicker } from '@/components/CurrencyPicker';
+import { setOwnerCurrencyOnce } from '@/services/authService';
+import { DEFAULT_CURRENCY } from '@/constants/currency';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -20,6 +23,47 @@ export default function Profile() {
   const { t } = useTranslation();
   const { mode, setMode, colors } = useTheme();
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [currency, setCurrency] = useState<string | undefined>(undefined);
+  const [pendingCurrency, setPendingCurrency] = useState(DEFAULT_CURRENCY);
+  const [savingCurrency, setSavingCurrency] = useState(false);
+
+  const loadCurrency = () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    getDoc(doc(db, 'owners', uid)).then((s) => {
+      setCurrency(s.data()?.currency);
+    });
+  };
+
+  useEffect(() => {
+    loadCurrency();
+  }, []);
+
+  const confirmCurrency = () => {
+    Alert.alert(
+      t('profile.currencyConfirmTitle'),
+      t('profile.currencyConfirmMessage', { currency: pendingCurrency }),
+      [
+        { text: t('products.cancel'), style: 'cancel' },
+        {
+          text: t('profile.currencyConfirmAction'),
+          onPress: async () => {
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            try {
+              setSavingCurrency(true);
+              await setOwnerCurrencyOnce(uid, pendingCurrency);
+              loadCurrency();
+            } catch {
+              Alert.alert(t('profile.currencyErrorTitle'), t('profile.currencyErrorMessage'));
+            } finally {
+              setSavingCurrency(false);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <Screen>
@@ -28,6 +72,28 @@ export default function Profile() {
       <View style={styles.section}>
         <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.title')}</Text>
         <Button title={t('profile.save')} onPress={() => setProfileModalVisible(true)} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.currency')}</Text>
+        {currency ? (
+          <View style={[styles.currencyLockedRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+            <Ionicons name="lock-closed" size={16} color={colors.muted} />
+            <Text style={[styles.currencyLockedText, { color: colors.text }]}>{currency}</Text>
+          </View>
+        ) : (
+          <>
+            <CurrencyPicker value={pendingCurrency} onChange={setPendingCurrency} />
+            <Text style={[styles.currencyHint, { color: colors.muted }]}>
+              {t('profile.currencyHint')}
+            </Text>
+            <Button
+              title={t('profile.currencyConfirmAction')}
+              onPress={confirmCurrency}
+              loading={savingCurrency}
+            />
+          </>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -133,4 +199,21 @@ const styles = StyleSheet.create({
   alignSelf: 'flex-end',
   padding: 8,
 },
+  currencyLockedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+  },
+  currencyLockedText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  currencyHint: {
+    fontSize: 12,
+    marginTop: 6,
+    marginBottom: 12,
+  },
 });

@@ -12,6 +12,7 @@ export async function registerOwner(input: {
   email: string;
   password: string;
   shopName: string;
+  currency: string;
   phone?: string;
   whatsapp?: string;
 }) {
@@ -25,6 +26,7 @@ export async function registerOwner(input: {
     fullName: input.fullName.trim(),
     shopName: input.shopName.trim(),
     shopSlug: slugify(input.shopName) || cred.user.uid,
+    currency: input.currency,
     subscriptionStatus: "inactive",
     accountStatus: "active",
     createdAt: now,
@@ -60,6 +62,13 @@ export async function getCurrentOwner(ownerId: string) {
   return snap.exists() ? (snap.data() as Owner) : null;
 }
 
-export async function updateOwnerCurrency(ownerId: string, currency: string) {
-  return setDoc(doc(db, 'owners', ownerId), { currency, updatedAt: Date.now() }, { merge: true });
+// La devise de la boutique est définitive : une fois posée, elle ne peut plus changer
+// (sinon il faudrait re-convertir tout l'historique produits/commandes existant).
+export async function setOwnerCurrencyOnce(ownerId: string, currency: string) {
+  const ref = doc(db, 'owners', ownerId);
+  const snap = await getDoc(ref);
+  if (snap.exists() && (snap.data() as Owner).currency) {
+    throw new Error('CURRENCY_ALREADY_SET');
+  }
+  return setDoc(ref, { currency, updatedAt: Date.now() }, { merge: true });
 }

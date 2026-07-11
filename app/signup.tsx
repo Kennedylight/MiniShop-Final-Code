@@ -37,7 +37,7 @@ export default function Signup() {
   const submit = async () => {
     try {
       setLoading(true);
-      await registerOwner({ fullName, shopName, email, password, whatsapp });
+      await registerOwner({ fullName, shopName, email, password, whatsapp, currency });
       router.replace("/pricing");
     } catch (e: any) {
       console.log("Signup error:", e);
@@ -188,6 +188,9 @@ export default function Signup() {
             {t("auth.signup.currency")}
           </Text>
           <CurrencyPicker value={currency} onChange={setCurrency} />
+          <Text style={[styles.currencyHint, { color: colors.muted }]}>
+            {t("auth.signup.currencyLocked")}
+          </Text>
         </View>
 
         {/* Password */}
@@ -265,8 +268,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  fieldWrap: { 
-    marginBottom: 16 
+  fieldWrap: {
+    marginBottom: 16
+  },
+  currencyHint: {
+    fontSize: 12,
+    marginTop: 6,
   },
   fieldLabel: {
     fontSize: 13,

@@ -14,9 +14,10 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { auth } from "@/services/firebase";
-import { getCurrentOwner, updateOwnerCurrency } from "@/services/authService";
+import { getCurrentOwner } from "@/services/authService";
 import {
   addProduct,
   deleteProduct,
@@ -120,6 +121,7 @@ export default function Products() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
+  const [ownerCurrency, setOwnerCurrency] = useState<string | undefined>(undefined);
   const [desc, setDesc] = useState("");
   const [image, setImage] = useState<string | undefined>();
   const [plan, setPlan] = useState<PlanId>("starter");
@@ -169,6 +171,7 @@ export default function Products() {
     if (!uid) return;
     const owner = await getCurrentOwner(uid);
     setPlan((owner?.plan as PlanId) || "starter");
+    setOwnerCurrency(owner?.currency);
     setCurrency(owner?.currency || DEFAULT_CURRENCY);
     setProducts(await listOwnerProducts(uid));
   };
@@ -258,6 +261,17 @@ const takePhoto = async () => {
   };
 
   const openAddForm = () => {
+    if (!ownerCurrency) {
+      Alert.alert(
+        t("products.currencyRequiredTitle"),
+        t("products.currencyRequiredMessage"),
+        [
+          { text: t("products.cancel"), style: "cancel" },
+          { text: t("products.setCurrency"), onPress: () => router.push("/dashboard/profile") },
+        ],
+      );
+      return;
+    }
     clearForm();
     setFormVisible(true);
   };
@@ -299,7 +313,6 @@ const takePhoto = async () => {
           isAvailable: true,
         });
       }
-      await updateOwnerCurrency(uid, currency).catch(() => undefined);
       clearForm();
       setFormVisible(false);
       await load();
@@ -336,6 +349,19 @@ const takePhoto = async () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {/* Currency required banner */}
+          {!initialLoading && !ownerCurrency && (
+            <Pressable
+              onPress={() => router.push("/dashboard/profile")}
+              style={[styles.currencyBanner, { backgroundColor: colors.card || "#f5f5f7", borderColor: colors.orange }]}
+            >
+              <Ionicons name="alert-circle-outline" size={20} color={colors.orange} />
+              <Text style={[styles.currencyBannerText, { color: colors.text }]}>
+                {t("products.currencyRequiredMessage")}
+              </Text>
+            </Pressable>
+          )}
+
           {/* Usage indicator */}
           <View
             style={[
@@ -416,6 +442,7 @@ const takePhoto = async () => {
         style={({ pressed }) => [
           styles.fab,
           { backgroundColor: colors.orange },
+          !ownerCurrency && { opacity: 0.5 },
           pressed && { opacity: 0.85 },
         ]}
       >
@@ -577,6 +604,20 @@ const RADIUS = 18;
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scrollContent: { paddingBottom: 100 },
+  currencyBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: RADIUS,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 16,
+  },
+  currencyBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
   usageCard: {
     borderRadius: RADIUS,
     padding: 14,

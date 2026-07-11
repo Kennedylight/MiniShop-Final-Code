@@ -20,6 +20,15 @@ service cloud.firestore {
         ]);
     }
 
+    // La devise de la boutique est définitive dès qu'elle est posée : un
+    // commerçant peut la définir une seule fois (champ absent -> présent),
+    // mais ne peut plus la modifier ensuite. Seul un super-admin le peut
+    // (voir la règle 'update' plus bas), pour gérer les cas de support.
+    function ownerCurrencyLockRespected() {
+      return !('currency' in resource.data)
+        || request.resource.data.currency == resource.data.currency;
+    }
+
     // ── owners ────────────────────────────────────────────────
     match /owners/{ownerId} {
       // Lecture publique : nécessaire à la vitrine (recherche par slug) et à l'admin.
@@ -50,7 +59,8 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (isSignedIn()
           && request.auth.uid == ownerId
-          && subscriptionFieldsUnchanged());
+          && subscriptionFieldsUnchanged()
+          && ownerCurrencyLockRespected());
 
       allow delete: if false;
     }

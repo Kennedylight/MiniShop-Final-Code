@@ -203,7 +203,7 @@ export default function Index() {
                           }
                         ]}
                       >
-                        <Ionicons name={b.icon} size={16} color={colors.primary} />
+                        <Ionicons name={b.icon} size={16} color={colors.orange} />
                       </View>
                       <Text style={[styles.bulletText, { color: colors.text }]}>
                         {t(b.key)}

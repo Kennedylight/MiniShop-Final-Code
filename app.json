@@ -19,6 +19,7 @@
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+       "permissions": ["CAMERA"],
       "package": "com.kameltechsolutions.minishop",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -29,7 +30,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-image-picker",
-      "expo-notifications"
+      "expo-notifications",
+       [
+        "expo-image-picker",
+        {
+          "cameraPermission": "L'application a besoin d'accéder à la caméra pour prendre des photos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

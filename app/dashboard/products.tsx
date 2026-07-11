@@ -10,6 +10,7 @@ import {
   Image,
   Animated,
   PanResponder,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +24,7 @@ import {
   updateProduct,
   uploadProductImage,
 } from "@/services/productService";
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Product } from "@/types/Product";
 import { PlanId, getPhotoLimit } from "@/constants/plans";
 import { DEFAULT_CURRENCY } from "@/constants/currency";
@@ -50,7 +52,7 @@ function SkeletonCard() {
           duration: 700,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     loop.start();
     return () => loop.stop();
@@ -58,12 +60,54 @@ function SkeletonCard() {
 
   return (
     <View style={styles.gridItem}>
-      <Animated.View style={[styles.skeletonImage, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
-      <Animated.View style={[styles.skeletonLine, styles.skeletonLineWide, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
-      <Animated.View style={[styles.skeletonLine, styles.skeletonLineNarrow, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
+      <Animated.View
+        style={[
+          styles.skeletonImage,
+          {
+            opacity: pulse,
+            backgroundColor: colors.border || "rgba(0,0,0,0.1)",
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.skeletonLine,
+          styles.skeletonLineWide,
+          {
+            opacity: pulse,
+            backgroundColor: colors.border || "rgba(0,0,0,0.1)",
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.skeletonLine,
+          styles.skeletonLineNarrow,
+          {
+            opacity: pulse,
+            backgroundColor: colors.border || "rgba(0,0,0,0.1)",
+          },
+        ]}
+      />
       <View style={styles.cardActions}>
-        <Animated.View style={[styles.skeletonButton, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
-        <Animated.View style={[styles.skeletonButton, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
+        <Animated.View
+          style={[
+            styles.skeletonButton,
+            {
+              opacity: pulse,
+              backgroundColor: colors.border || "rgba(0,0,0,0.1)",
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.skeletonButton,
+            {
+              opacity: pulse,
+              backgroundColor: colors.border || "rgba(0,0,0,0.1)",
+            },
+          ]}
+        />
       </View>
     </View>
   );
@@ -116,7 +160,7 @@ export default function Products() {
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   const uid = auth.currentUser?.uid;
@@ -138,24 +182,20 @@ export default function Products() {
   }, []);
 
   const pick = () => {
-    Alert.alert(
-      "Ajouter une photo",
-      "Choisissez une option",
-      [
-        {
-          text: "Prendre une photo",
-          onPress: takePhoto,
-        },
-        {
-          text: "Choisir depuis la galerie",
-          onPress: pickFromGallery,
-        },
-        {
-          text: "Annuler",
-          style: "cancel",
-        },
-      ]
-    );
+    Alert.alert("Ajouter une photo", "Choisissez une option", [
+      {
+        text: "Prendre une photo",
+        onPress: takePhoto,
+      },
+      {
+        text: "Choisir depuis la galerie",
+        onPress: pickFromGallery,
+      },
+      {
+        text: "Annuler",
+        style: "cancel",
+      },
+    ]);
   };
 
   const pickFromGallery = async () => {
@@ -169,24 +209,46 @@ export default function Products() {
     }
   };
 
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
+  // const takePhoto = async () => {
+  //   const permission = await ImagePicker.requestCameraPermissionsAsync();
 
-    if (!permission.granted) {
-      Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
-      return;
-    }
+  //   if (!permission.granted) {
+  //     Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
+  //     return;
+  //   }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.75,
-    });
+  //   const result = await ImagePicker.launchCameraAsync({
+  //     mediaTypes: ["images"],
+  //     quality: Platform.OS === "android" ? 0.5 : 0.75,
+  //     allowsEditing: true,
+  //   });
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
+  //   if (!result.canceled) {
+  //     setImage(result.assets[0].uri);
+  //   }
+  // };
 
+const takePhoto = async () => {
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
+  if (!permission.granted) {
+    Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
+    return;
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ['images'],
+    quality: 0.75,
+  });
+
+  if (!result.canceled) {
+    const manipulated = await ImageManipulator.manipulateAsync(
+      result.assets[0].uri,
+      [{ resize: { width: 1080 } }], // redimensionne, garde le ratio
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+    );
+    setImage(manipulated.uri);
+  }
+};
   const clearForm = () => {
     setName("");
     setPrice("");
@@ -256,7 +318,7 @@ export default function Products() {
         style: "destructive",
         onPress: async () => {
           await deleteProduct(productId).catch((e) =>
-            Alert.alert(t("products.productError"), e.message)
+            Alert.alert(t("products.productError"), e.message),
           );
           await load();
         },
@@ -275,7 +337,12 @@ export default function Products() {
           showsVerticalScrollIndicator={false}
         >
           {/* Usage indicator */}
-          <View style={[styles.usageCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
+          <View
+            style={[
+              styles.usageCard,
+              { backgroundColor: colors.card || "#f5f5f7" },
+            ]}
+          >
             <View style={styles.usageTop}>
               <Text style={[styles.usageText, { color: colors.text }]}>
                 {t("products.usageText", { count: products.length, limit })}
@@ -284,8 +351,21 @@ export default function Products() {
                 {t("products.usagePlan", { plan: plan.toUpperCase() })}
               </Text>
             </View>
-            <View style={[styles.usageTrack, { backgroundColor: colors.border || "rgba(0,0,0,0.08)" }]}>
-              <View style={[styles.usageFill, { width: `${usagePct * 100}%`, backgroundColor: colors.orange }]} />
+            <View
+              style={[
+                styles.usageTrack,
+                { backgroundColor: colors.border || "rgba(0,0,0,0.08)" },
+              ]}
+            >
+              <View
+                style={[
+                  styles.usageFill,
+                  {
+                    width: `${usagePct * 100}%`,
+                    backgroundColor: colors.orange,
+                  },
+                ]}
+              />
             </View>
           </View>
 
@@ -298,7 +378,12 @@ export default function Products() {
             </View>
           ) : products.length === 0 ? (
             <View style={styles.emptyState}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: colors.card || "#f5f5f7" }]}>
+              <View
+                style={[
+                  styles.emptyIconWrap,
+                  { backgroundColor: colors.card || "#f5f5f7" },
+                ]}
+              >
                 <Ionicons name="cube-outline" size={32} color={colors.muted} />
               </View>
               <Text style={[styles.emptyTitle, { color: colors.text }]}>
@@ -310,16 +395,16 @@ export default function Products() {
             </View>
           ) : (
             <View style={styles.grid}>
-            {products.map((p) => (
-  <View key={p.productId} style={styles.gridItem}>
-    <ProductCard 
-      product={p} 
-      onEdit={() => startEdit(p)}
-      onDelete={() => remove(p.productId)}
-      // onAdd={() => addToCart(p)} // Optionnel : si tu as une fonction d'ajout
-    />
-  </View>
-))}
+              {products.map((p) => (
+                <View key={p.productId} style={styles.gridItem}>
+                  <ProductCard
+                    product={p}
+                    onEdit={() => startEdit(p)}
+                    onDelete={() => remove(p.productId)}
+                    // onAdd={() => addToCart(p)} // Optionnel : si tu as une fonction d'ajout
+                  />
+                </View>
+              ))}
             </View>
           )}
         </ScrollView>
@@ -329,9 +414,9 @@ export default function Products() {
       <Pressable
         onPress={openAddForm}
         style={({ pressed }) => [
-          styles.fab, 
+          styles.fab,
           { backgroundColor: colors.orange },
-          pressed && { opacity: 0.85 }
+          pressed && { opacity: 0.85 },
         ]}
       >
         <Ionicons name="add" size={26} color="#fff" />
@@ -345,17 +430,32 @@ export default function Products() {
         onRequestClose={() => setFormVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.background || "#fff" }]}>
-            <View style={[styles.modalHandle, { backgroundColor: colors.border || "rgba(0,0,0,0.15)" }]} />
+          <View
+            style={[
+              styles.modalSheet,
+              { backgroundColor: colors.background || "#fff" },
+            ]}
+          >
+            <View
+              style={[
+                styles.modalHandle,
+                { backgroundColor: colors.border || "rgba(0,0,0,0.15)" },
+              ]}
+            />
 
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>
-                {editingId ? t("products.editProduct") : t("products.addProduct")}
+                {editingId
+                  ? t("products.editProduct")
+                  : t("products.addProduct")}
               </Text>
               <Pressable
                 onPress={() => setFormVisible(false)}
                 hitSlop={10}
-                style={[styles.modalClose, { backgroundColor: colors.card || "#f5f5f7" }]}
+                style={[
+                  styles.modalClose,
+                  { backgroundColor: colors.card || "#f5f5f7" },
+                ]}
               >
                 <Ionicons name="close" size={22} color={colors.text} />
               </Pressable>
@@ -374,18 +474,46 @@ export default function Products() {
                 <Pressable onPress={pick} style={styles.photoPicker}>
                   {image ? (
                     <View style={styles.photoPreviewWrap}>
-                      <Image source={{ uri: image }} style={[styles.photoPreview, { backgroundColor: colors.card || "#f5f5f7" }]} />
-                      <View style={[styles.photoEditBadge, { backgroundColor: colors.primary, borderColor: colors.background || "#fff" }]}>
+                      <Image
+                        source={{ uri: image }}
+                        style={[
+                          styles.photoPreview,
+                          { backgroundColor: colors.card || "#f5f5f7" },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.photoEditBadge,
+                          {
+                            backgroundColor: colors.primary,
+                            borderColor: colors.background || "#fff",
+                          },
+                        ]}
+                      >
                         <Ionicons name="camera" size={14} color="#fff" />
                       </View>
                     </View>
                   ) : (
-                    <View style={[styles.photoPlaceholder, { 
-                      backgroundColor: colors.card || "#f5f5f7",
-                      borderColor: colors.border || "rgba(0,0,0,0.08)"
-                    }]}>
-                      <Ionicons name="camera-outline" size={26} color={colors.muted} />
-                      <Text style={[styles.photoPlaceholderText, { color: colors.muted }]}>
+                    <View
+                      style={[
+                        styles.photoPlaceholder,
+                        {
+                          backgroundColor: colors.card || "#f5f5f7",
+                          borderColor: colors.border || "rgba(0,0,0,0.08)",
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="camera-outline"
+                        size={26}
+                        color={colors.muted}
+                      />
+                      <Text
+                        style={[
+                          styles.photoPlaceholderText,
+                          { color: colors.muted },
+                        ]}
+                      >
                         {t("products.addPhoto")}
                       </Text>
                     </View>
@@ -397,10 +525,10 @@ export default function Products() {
                 <Text style={[styles.fieldLabel, { color: colors.text }]}>
                   {t("products.productName")}
                 </Text>
-                <Input 
-                  placeholder={t("products.productName")} 
-                  value={name} 
-                  onChangeText={setName} 
+                <Input
+                  placeholder={t("products.productName")}
+                  value={name}
+                  onChangeText={setName}
                 />
               </View>
 
@@ -420,15 +548,19 @@ export default function Products() {
                 <Text style={[styles.fieldLabel, { color: colors.text }]}>
                   {t("products.description")}
                 </Text>
-                <Input 
-                  placeholder={t("products.description")} 
-                  value={desc} 
-                  onChangeText={setDesc} 
+                <Input
+                  placeholder={t("products.description")}
+                  value={desc}
+                  onChangeText={setDesc}
                 />
               </View>
 
               <Button
-                title={editingId ? t("products.saveChanges") : t("products.addProductButton")}
+                title={
+                  editingId
+                    ? t("products.saveChanges")
+                    : t("products.addProductButton")
+                }
                 onPress={submit}
                 loading={loading}
               />
@@ -456,9 +588,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  usageText: { 
-    fontSize: 13, 
-    fontWeight: "700" 
+  usageText: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   usagePlan: {
     fontSize: 11,
@@ -474,18 +606,18 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 3,
   },
-  grid: { 
-    flexDirection: "row", 
-    flexWrap: "wrap", 
-    gap: 12 
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
   },
-  gridItem: { 
-    width: "100%" 
+  gridItem: {
+    width: "100%",
   },
-  cardActions: { 
-    flexDirection: "row", 
-    gap: 8, 
-    marginTop: 8 
+  cardActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
   },
   iconButton: {
     flex: 1,
@@ -494,15 +626,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  iconButtonDanger: { 
-    backgroundColor: "rgba(239,68,68,0.1)" 
+  iconButtonDanger: {
+    backgroundColor: "rgba(239,68,68,0.1)",
   },
-  pressed: { 
-    opacity: 0.7 
+  pressed: {
+    opacity: 0.7,
   },
-  emptyState: { 
-    alignItems: "center", 
-    paddingVertical: 60 
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 60,
   },
   emptyIconWrap: {
     width: 64,
@@ -512,14 +644,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 14,
   },
-  emptyTitle: { 
-    fontSize: 16, 
-    fontWeight: "800", 
-    marginBottom: 4 
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    marginBottom: 4,
   },
-  emptyText: { 
-    fontSize: 13, 
-    textAlign: "center" 
+  emptyText: {
+    fontSize: 13,
+    textAlign: "center",
   },
   fab: {
     position: "absolute",
@@ -562,9 +694,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 18,
   },
-  modalTitle: { 
-    fontSize: 18, 
-    fontWeight: "800" 
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
   },
   modalClose: {
     width: 32,
@@ -573,19 +705,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  fieldWrap: { 
-    marginBottom: 16 
+  fieldWrap: {
+    marginBottom: 16,
   },
   fieldLabel: {
     fontSize: 13,
     fontWeight: "600",
     marginBottom: 6,
   },
-  photoPicker: { 
-    alignSelf: "flex-start" 
+  photoPicker: {
+    alignSelf: "flex-start",
   },
-  photoPreviewWrap: { 
-    position: "relative" 
+  photoPreviewWrap: {
+    position: "relative",
   },
   photoPreview: {
     width: 96,
@@ -628,11 +760,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 6,
   },
-  skeletonLineWide: { 
-    width: "80%" 
+  skeletonLineWide: {
+    width: "80%",
   },
-  skeletonLineNarrow: { 
-    width: "45%" 
+  skeletonLineNarrow: {
+    width: "45%",
   },
   skeletonButton: {
     flex: 1,

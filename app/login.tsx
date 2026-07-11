@@ -100,7 +100,7 @@ export default function Login() {
               autoCapitalize="none"
               value={password}
               onChangeText={setPassword}
-              style={[styles.input, { paddingRight: 40 }]}
+              style={[styles.input, { paddingRight: 40 ,  color: colors.text }]}
             />
             <Pressable
               onPress={() => setShowPassword((v) => !v)}

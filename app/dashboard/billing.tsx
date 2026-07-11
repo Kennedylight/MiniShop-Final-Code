@@ -103,7 +103,7 @@ export default function Billing() {
           pressed && styles.pressed
         ]}
       >
-        <View style={[styles.rowIconWrap, { backgroundColor: colors.primary }]}>
+        <View style={[styles.rowIconWrap, { backgroundColor: colors.orange }]}>
           <Ionicons name="trending-up-outline" size={18} color="#fff" />
         </View>
         <View style={{ flex: 1 }}>

@@ -280,12 +280,12 @@ export default function Products() {
               <Text style={[styles.usageText, { color: colors.text }]}>
                 {t("products.usageText", { count: products.length, limit })}
               </Text>
-              <Text style={[styles.usagePlan, { color: colors.primary }]}>
+              <Text style={[styles.usagePlan, { color: colors.orange }]}>
                 {t("products.usagePlan", { plan: plan.toUpperCase() })}
               </Text>
             </View>
             <View style={[styles.usageTrack, { backgroundColor: colors.border || "rgba(0,0,0,0.08)" }]}>
-              <View style={[styles.usageFill, { width: `${usagePct * 100}%`, backgroundColor: colors.primary }]} />
+              <View style={[styles.usageFill, { width: `${usagePct * 100}%`, backgroundColor: colors.orange }]} />
             </View>
           </View>
 
@@ -310,33 +310,16 @@ export default function Products() {
             </View>
           ) : (
             <View style={styles.grid}>
-              {products.map((p) => (
-                <View key={p.productId} style={styles.gridItem}>
-                  <ProductCard product={p} />
-                  <View style={styles.cardActions}>
-                    <Pressable
-                      onPress={() => startEdit(p)}
-                      style={({ pressed }) => [
-                        styles.iconButton,
-                        { backgroundColor: colors.card || "#f5f5f7" },
-                        pressed && styles.pressed,
-                      ]}
-                    >
-                      <Ionicons name="create-outline" size={16} color={colors.text} />
-                    </Pressable>
-                    <Pressable
-                      onPress={() => remove(p.productId)}
-                      style={({ pressed }) => [
-                        styles.iconButton,
-                        styles.iconButtonDanger,
-                        pressed && styles.pressed,
-                      ]}
-                    >
-                      <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
+            {products.map((p) => (
+  <View key={p.productId} style={styles.gridItem}>
+    <ProductCard 
+      product={p} 
+      onEdit={() => startEdit(p)}
+      onDelete={() => remove(p.productId)}
+      // onAdd={() => addToCart(p)} // Optionnel : si tu as une fonction d'ajout
+    />
+  </View>
+))}
             </View>
           )}
         </ScrollView>
@@ -347,7 +330,7 @@ export default function Products() {
         onPress={openAddForm}
         style={({ pressed }) => [
           styles.fab, 
-          { backgroundColor: colors.primary },
+          { backgroundColor: colors.orange },
           pressed && { opacity: 0.85 }
         ]}
       >
@@ -497,7 +480,7 @@ const styles = StyleSheet.create({
     gap: 12 
   },
   gridItem: { 
-    width: "47.5%" 
+    width: "100%" 
   },
   cardActions: { 
     flexDirection: "row", 

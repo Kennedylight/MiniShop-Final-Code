@@ -145,7 +145,7 @@ export default function SharePage() {
       {/* Link card with copy */}
       <View style={[styles.linkCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
         <View style={[styles.linkIconWrap, { backgroundColor: colors.background || "#fff" }]}>
-          <Ionicons name="link-outline" size={18} color={colors.primary} />
+          <Ionicons name="link-outline" size={18} color={colors.orange} />
         </View>
         <Text style={[styles.linkText, { color: colors.text }]} numberOfLines={1}>
           {status === "loading" ? t("share.loadingLink") : isReady ? url : statusMessage[status as Exclude<LinkStatus, "ready">]}
@@ -162,7 +162,7 @@ export default function SharePage() {
           <Ionicons
             name={copied ? "checkmark" : "copy-outline"}
             size={18}
-            color={copied ? colors.primary : colors.text}
+            color={copied ? colors.orange : colors.text}
           />
         </Pressable>
       </View>

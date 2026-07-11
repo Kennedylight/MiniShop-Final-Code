@@ -47,7 +47,7 @@ function HeaderRight() {
             height: 30,
             borderRadius: 15,
             backgroundColor: isOnDashboard
-              ? colors.primary
+              ? colors.orange
               : colors.card || "#e5e7eb",
             alignItems: "center",
             justifyContent: "center",
@@ -81,7 +81,7 @@ function HeaderRight() {
             height: 30,
             borderRadius: 15,
             backgroundColor: isOnProfile
-              ? colors.primary
+              ? colors.orange
               : colors.card || "#e5e7eb",
             alignItems: "center",
             justifyContent: "center",

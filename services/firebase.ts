@@ -36,6 +36,7 @@ if (Platform.OS === 'web') {
       persistence: getReactNativePersistence(ReactNativeAsyncStorage),
     });
   } catch (error) {
+    console.warn('⚠️ Persistence RN non initialisée, fallback getAuth:', error);
     auth = getAuth(app);
   }
 }

@@ -1,7 +1,7 @@
-// components/ui/Badge.tsx
 import { Text, View, StyleSheet } from "react-native";
 import { ReactNode } from "react";
 import { useTheme } from "@/context/ThemeContext";
+import { fontFamily } from "@/constants/typography";
 
 type Tone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 
@@ -10,20 +10,18 @@ export function Badge({ tone = "neutral", children }: { tone?: Tone; children: R
 
   const getToneStyles = (): { bg: string; text: string } => {
     switch (tone) {
-      case "neutral":
-        return { bg: colors.card || "#f5f5f7", text: colors.text };
       case "primary":
-        return { bg: colors.primary + '1E', text: colors.primary };
+        return { bg: colors.orangeSoft, text: colors.orange };
       case "success":
-        return { bg: "rgba(34,197,94,0.12)", text: "#16a34a" };
+        return { bg: colors.success + "1E", text: colors.success };
       case "warning":
-        return { bg: "rgba(245,158,11,0.12)", text: "#d97706" };
+        return { bg: colors.warningSoft, text: colors.warning };
       case "danger":
-        return { bg: "rgba(239,68,68,0.12)", text: "#ef4444" };
+        return { bg: colors.danger + "1A", text: colors.danger };
       case "info":
-        return { bg: "rgba(59,130,246,0.12)", text: "#3b82f6" };
+        return { bg: colors.infoSoft, text: colors.info };
       default:
-        return { bg: colors.card || "#f5f5f7", text: colors.text };
+        return { bg: colors.border, text: colors.muted };
     }
   };
 
@@ -37,14 +35,15 @@ export function Badge({ tone = "neutral", children }: { tone?: Tone; children: R
 }
 
 const styles = StyleSheet.create({
-  badge: { 
-    borderRadius: 20, 
-    paddingHorizontal: 10, 
-    paddingVertical: 5, 
-    alignSelf: "flex-start" 
+  badge: {
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: "flex-start",
   },
-  text: { 
-    fontSize: 12, 
-    fontWeight: "700" 
+  text: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 11,
+    letterSpacing: 0.2,
   },
 });

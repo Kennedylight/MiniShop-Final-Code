@@ -1,6 +1,6 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/services/firebase";
@@ -19,8 +19,8 @@ export default function PublicShop() {
   useEffect(() => {
     (async () => {
       if (!slug) return;
-      const shop: any = await findShopBySlug(slug);
-      setOwner(shop as Owner);
+      const shop = await findShopBySlug(slug);
+      setOwner(shop);
       if (shop) {
         const q = query(
           collection(db, "products"),

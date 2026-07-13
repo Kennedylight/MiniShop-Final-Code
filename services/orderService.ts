@@ -10,6 +10,19 @@ import {
   where,
 } from 'firebase/firestore';
 import { Order, OrderStatus } from '@/types/Order';
+import { Owner } from '@/types/Owner';
+
+async function postFunction(path: string, body: unknown): Promise<void> {
+  try {
+    await fetch(`${process.env.EXPO_PUBLIC_FUNCTIONS_BASE_URL}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    console.warn(`Failed to call ${path}`, err);
+  }
+}
 
 export function subscribeToOrder(orderId: string, cb: (order: Order | null) => void) {
   return onSnapshot(
@@ -18,7 +31,7 @@ export function subscribeToOrder(orderId: string, cb: (order: Order | null) => v
       cb(snap.exists() ? ({ orderId: snap.id, ...snap.data() } as Order) : null);
     },
     error => {
-      console.log('subscribeToOrder Firestore error:', error);
+      console.warn('subscribeToOrder Firestore error:', error);
       cb(null);
     }
   );
@@ -38,16 +51,16 @@ export async function createOrder(
 
   const docRef = await addDoc(collection(db, 'orders'), order);
 
-  await fetch(`${process.env.EXPO_PUBLIC_FUNCTIONS_BASE_URL}/sendNewOrderNotification`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId: docRef.id }),
-  }).catch(() => undefined);
+  void postFunction('sendNewOrderNotification', { orderId: docRef.id });
 
   return docRef.id;
 }
 
-export function subscribeOwnerOrders(ownerId: string, cb: (orders: Order[]) => void) {
+export function subscribeOwnerOrders(
+  ownerId: string,
+  cb: (orders: Order[]) => void,
+  onError?: (error: unknown) => void,
+) {
   const q = query(
     collection(db, 'orders'),
     where('ownerId', '==', ownerId)
@@ -70,7 +83,8 @@ export function subscribeOwnerOrders(ownerId: string, cb: (orders: Order[]) => v
       cb(orders);
     },
     error => {
-      console.log('subscribeOwnerOrders Firestore error:', error);
+      console.warn('subscribeOwnerOrders Firestore error:', error);
+      onError?.(error);
     }
   );
 }
@@ -85,14 +99,10 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
     { merge: true }
   );
 
-  await fetch(`${process.env.EXPO_PUBLIC_FUNCTIONS_BASE_URL}/sendOrderStatusNotification`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, status }),
-  }).catch(() => undefined);
+  void postFunction('sendOrderStatusNotification', { orderId, status });
 }
 
-export async function findShopBySlug(slug: string) {
+export async function findShopBySlug(slug: string): Promise<Owner | null> {
   const q = query(
     collection(db, 'owners'),
     where('shopSlug', '==', slug)
@@ -100,10 +110,5 @@ export async function findShopBySlug(slug: string) {
 
   const snap = await getDocs(q);
 
-  return snap.empty
-    ? null
-    : {
-        id: snap.docs[0].id,
-        ...snap.docs[0].data(),
-      };
+  return snap.empty ? null : (snap.docs[0].data() as Owner);
 }

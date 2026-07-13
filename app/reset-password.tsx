@@ -15,6 +15,7 @@ import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
 import { resetPassword } from "@/services/authService";
 import { useTheme } from "@/context/ThemeContext";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -28,8 +29,8 @@ export default function ResetPassword() {
       setLoading(true);
       await resetPassword(email);
       setSent(true);
-    } catch (e: any) {
-      Alert.alert(t("auth.resetPassword.error"), e.message);
+    } catch (e) {
+      Alert.alert(t("auth.resetPassword.error"), getErrorMessage(e));
     } finally {
       setLoading(false);
     }

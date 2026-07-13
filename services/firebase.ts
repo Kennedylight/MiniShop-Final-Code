@@ -1,11 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { Platform } from 'react-native';
 
-import {
-  getAuth,
-  initializeAuth,
-  browserLocalPersistence,
-} from 'firebase/auth';
+import { getAuth, initializeAuth, type Auth } from 'firebase/auth';
 
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
@@ -21,7 +17,7 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-let auth;
+let auth: Auth;
 
 if (Platform.OS === 'web') {
   auth = getAuth(app);

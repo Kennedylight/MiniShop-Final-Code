@@ -15,7 +15,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.christian.minishop",
+      "bundleIdentifier": "com.kameltechsolutions.minishop",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
@@ -29,10 +29,15 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-image-picker",
       "expo-notifications",
-       [
+      [
         "expo-image-picker",
+        {
+          "cameraPermission": "L'application a besoin d'accéder à la caméra pour prendre des photos."
+        }
+      ],
+      [
+        "expo-camera",
         {
           "cameraPermission": "L'application a besoin d'accéder à la caméra pour prendre des photos."
         }

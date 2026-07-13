@@ -1,3 +1,3 @@
-export default function StripeWrapper({ children }: { children: React.ReactNode }) {
+export default function StripeWrapper({ children }: { children: React.ReactElement }) {
   return <>{children}</>;
 }

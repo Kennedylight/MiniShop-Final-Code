@@ -1,18 +1,10 @@
-// components/dashboard/KpiCard.tsx
 import { Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LineChart } from "react-native-gifted-charts";
 import { useTheme } from "@/context/ThemeContext";
+import { fontFamily } from "@/constants/typography";
 
 type Tone = "primary" | "info" | "success" | "warning" | "danger";
-
-const TONE_COLOR: Record<Tone, string> = {
-  primary: "", // Sera défini dynamiquement
-  info: "#3b82f6",
-  success: "#16a34a",
-  warning: "#d97706",
-  danger: "#ef4444",
-};
 
 export function KpiCard({
   label,
@@ -32,24 +24,20 @@ export function KpiCard({
   const { colors } = useTheme();
   const chartData = trend && trend.length > 1 ? trend.map((v) => ({ value: v })) : undefined;
 
-  // Déterminer la couleur dynamique en fonction du ton
-  const getToneColor = (): string => {
-    if (tone === "primary") return colors.primary;
-    return TONE_COLOR[tone];
+  const toneColor: Record<Tone, string> = {
+    primary: colors.orange,
+    info: colors.info,
+    success: colors.success,
+    warning: colors.warning,
+    danger: colors.danger,
   };
 
-  const getToneBg = (): string => {
-    const color = getToneColor();
-    return color + '1E'; // 12% d'opacité
-  };
-
-  const toneColor = getToneColor();
-  const toneBg = getToneBg();
+  const color = toneColor[tone];
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.background || "#fff" }]}>
-      <View style={[styles.iconWrap, { backgroundColor: toneBg }]}>
-        <Ionicons name={icon} size={18} color={toneColor} />
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+      <View style={[styles.iconWrap, { backgroundColor: color + "1E" }]}>
+        <Ionicons name={icon} size={18} color={color} />
       </View>
       <Text style={[styles.label, { color: colors.muted }]}>{label}</Text>
       <Text style={[styles.value, { color: colors.text }]}>
@@ -63,12 +51,12 @@ export function KpiCard({
             height={32}
             width={120}
             thickness={2}
-            color={toneColor}
+            color={color}
             hideDataPoints
             hideRules
             hideAxesAndRules
             areaChart
-            startFillColor={toneColor}
+            startFillColor={color}
             startOpacity={0.25}
             endOpacity={0}
             curved
@@ -84,35 +72,36 @@ const styles = StyleSheet.create({
   card: {
     flexBasis: "47.5%",
     flexGrow: 1,
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
     elevation: 2,
   },
-  iconWrap: { 
-    width: 40, 
-    height: 40, 
-    borderRadius: 14, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    marginBottom: 14 
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
-  label: { 
-    fontSize: 11, 
-    fontWeight: "700", 
-    textTransform: "uppercase", 
-    letterSpacing: 0.4 
+  label: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
-  value: { 
-    fontSize: 26, 
-    fontWeight: "800", 
-    marginTop: 4 
+  value: {
+    fontFamily: fontFamily.sansExtraBold,
+    fontSize: 26,
+    marginTop: 4,
+    fontVariant: ["tabular-nums"],
   },
-  sparkline: { 
-    marginTop: 10, 
-    marginLeft: -16 
+  sparkline: {
+    marginTop: 10,
+    marginLeft: -16,
   },
 });

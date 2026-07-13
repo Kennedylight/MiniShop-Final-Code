@@ -11,6 +11,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { KpiCard } from "@/components/dashboard/KpiCard";
+import { fontFamily } from "@/constants/typography";
 import { auth } from "@/services/firebase";
 import { getCurrentOwner } from "@/services/authService";
 import { useOwnerStats } from "@/hooks/useOwnerStats";
@@ -23,6 +24,7 @@ import {
 } from "@/lib/access";
 import { formatPrice } from "@/constants/currency";
 import { useTheme } from "@/context/ThemeContext";
+import { Owner } from "@/types/Owner";
 
 const STATUS_TONES: Record<
   string,
@@ -50,7 +52,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const uid = auth.currentUser?.uid;
-  const [owner, setOwner] = useState<any>(null);
+  const [owner, setOwner] = useState<Owner | null>(null);
 
   useEffect(() => {
     if (uid) getCurrentOwner(uid).then(setOwner);
@@ -77,7 +79,7 @@ export default function Dashboard() {
     : [];
 
   return (
-    <Screen>
+    <Screen topInset={false}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
@@ -113,12 +115,12 @@ export default function Dashboard() {
             style={[
               styles.trialBanner,
               {
-                backgroundColor: colors.primary + "14", // 8% opacity
-                borderColor: colors.primary + "40", // 25% opacity
+                backgroundColor: colors.orangeSoft,
+                borderColor: colors.orange + "40",
               },
             ]}
           >
-            <Ionicons name="sparkles" size={20} color={colors.primary} />
+            <Ionicons name="sparkles" size={20} color={colors.orange} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.bannerTitle, { color: colors.text }]}>
                 {t("dashboard.trialTitle", { days: daysLeft })}
@@ -130,8 +132,13 @@ export default function Dashboard() {
           </View>
         ) : (
           !access && (
-            <View style={[styles.trialBanner, styles.warningBanner]}>
-              <Ionicons name="alert-circle" size={20} color="#d97706" />
+            <View
+              style={[
+                styles.trialBanner,
+                { backgroundColor: colors.warningSoft, borderColor: colors.warning + "40" },
+              ]}
+            >
+              <Ionicons name="alert-circle" size={20} color={colors.warning} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.bannerTitle, { color: colors.text }]}>
                   {t("dashboard.trialExpiredTitle")}
@@ -185,7 +192,7 @@ export default function Dashboard() {
 
         {/* Quota photos */}
         <View
-          style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}
         >
           <View style={styles.rowBetween}>
             <Text style={[styles.quotaText, { color: colors.text }]}>
@@ -207,7 +214,7 @@ export default function Dashboard() {
 
         {/* Courbe des commandes */}
         <View
-          style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}
         >
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("dashboard.ordersChartTitle")}
@@ -235,7 +242,7 @@ export default function Dashboard() {
 
         {/* Donut par statut */}
         <View
-          style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}
         >
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("dashboard.statusBreakdown")}
@@ -266,7 +273,7 @@ export default function Dashboard() {
 
         {/* Commandes récentes */}
         <View
-          style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}
         >
           <View style={styles.rowBetween}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -340,45 +347,43 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: 40, gap: 16 },
+  scroll: { paddingBottom: 40, gap: 20 },
   header: { marginBottom: 4 },
   eyebrow: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 11,
-    fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "800",
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 30,
     marginTop: 6,
   },
   subtitle: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
     marginTop: 4,
   },
   badgeRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 12,
+    marginTop: 16,
   },
   trialBanner: {
     flexDirection: "row",
     gap: 12,
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     alignItems: "flex-start",
   },
-  warningBanner: {
-    backgroundColor: "rgba(245,158,11,0.08)",
-    borderColor: "rgba(245,158,11,0.3)",
-  },
   bannerTitle: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 14,
-    fontWeight: "700",
   },
   bannerHint: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 12,
     marginTop: 2,
   },
@@ -391,30 +396,35 @@ const styles = StyleSheet.create({
     flexBasis: "47.5%",
     flexGrow: 1,
     height: 130,
-    borderRadius: 20,
+    borderRadius: 24,
   },
   card: {
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
   },
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   quotaText: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 13,
-    fontWeight: "700",
   },
   link: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 13,
-    fontWeight: "700",
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    marginBottom: 12,
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 18,
+    marginBottom: 16,
   },
   donutRow: {
     flexDirection: "row",
@@ -423,7 +433,7 @@ const styles = StyleSheet.create({
   },
   legend: {
     flex: 1,
-    gap: 8,
+    gap: 10,
   },
   legendRow: {
     flexDirection: "row",
@@ -437,17 +447,18 @@ const styles = StyleSheet.create({
   },
   legendText: {
     flex: 1,
+    fontFamily: fontFamily.sansMedium,
     fontSize: 12,
   },
   legendValue: {
+    fontFamily: fontFamily.sansExtraBold,
     fontSize: 12,
-    fontWeight: "800",
   },
   orderRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   orderIdBadge: {
@@ -458,20 +469,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   orderIdText: {
+    fontFamily: fontFamily.sansExtraBold,
     fontSize: 11,
-    fontWeight: "800",
   },
   orderName: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 14,
-    fontWeight: "700",
   },
   orderMeta: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 12,
     marginTop: 1,
   },
   orderPrice: {
+    fontFamily: fontFamily.sansExtraBold,
     fontSize: 14,
-    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
   },
   orderSkeleton: {
     height: 56,

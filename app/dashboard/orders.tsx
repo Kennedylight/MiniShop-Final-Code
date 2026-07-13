@@ -18,6 +18,8 @@ import { Order, OrderStatus } from "@/types/Order";
 import { Screen } from "@/components/Screen";
 import { useTheme } from "@/context/ThemeContext";
 import { formatPrice } from "@/constants/currency";
+import { fontFamily } from "@/constants/typography";
+import { getErrorMessage } from "@/lib/errors";
 
 const STATUS_ORDER: OrderStatus[] = [
   "new",
@@ -65,7 +67,7 @@ function SkeletonRow() {
   }, []);
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}>
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
       <View style={styles.cardTop}>
         <Animated.View style={[styles.skelLine, { width: "40%", opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
         <Animated.View style={[styles.skelBadge, { opacity: pulse, backgroundColor: colors.border || "rgba(0,0,0,0.1)" }]} />
@@ -102,7 +104,7 @@ export default function Orders() {
       setOrders([]);
       return;
     }
-    return subscribeOwnerOrders(uid, setOrders);
+    return subscribeOwnerOrders(uid, setOrders, () => setOrders([]));
   }, []);
 
   const loading = orders === null;
@@ -160,12 +162,12 @@ export default function Orders() {
 
   const handleStatusChange = (orderId: string, status: OrderStatus) => {
     updateOrderStatus(orderId, status).catch((e) =>
-      Alert.alert(t("orders.errorTitle"), e.message)
+      Alert.alert(t("orders.errorTitle"), getErrorMessage(e))
     );
   };
 
   return (
-    <Screen>
+    <Screen topInset={false}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -189,8 +191,8 @@ export default function Orders() {
           </>
         ) : orders.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={[styles.emptyIconWrap, { backgroundColor: colors.card || "#f5f5f7" }]}>
-              <Ionicons name="receipt-outline" size={32} color={colors.muted} />
+            <View style={[styles.emptyIconWrap, { backgroundColor: colors.orangeSoft }]}>
+              <Ionicons name="receipt-outline" size={32} color={colors.orange} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               {t("orders.emptyTitle")}
@@ -205,7 +207,7 @@ export default function Orders() {
             const upcoming = nextStatuses(o.status);
 
             return (
-              <View key={o.orderId} style={[styles.card, { backgroundColor: colors.card || "#f5f5f7" }]}>
+              <View key={o.orderId} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
                 <View style={styles.cardTop}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.orderId, { color: colors.text }]}>
@@ -311,151 +313,158 @@ const RADIUS = 18;
 
 const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 32 },
-  header: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "space-between", 
-    marginBottom: 18 
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20
   },
-  title: { 
-    fontSize: 26, 
-    fontWeight: "800", 
-    letterSpacing: -0.3 
+  title: {
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 28,
+    letterSpacing: -0.3,
   },
-  count: { 
-    fontSize: 13, 
-    fontWeight: "600" 
+  count: {
+    fontFamily: fontFamily.sansSemiBold,
+    fontSize: 13,
   },
-  card: { 
-    borderRadius: RADIUS, 
-    padding: 16, 
-    marginBottom: 14 
+  card: {
+    borderRadius: RADIUS,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
   },
-  cardTop: { 
-    flexDirection: "row", 
-    alignItems: "flex-start", 
-    justifyContent: "space-between", 
-    gap: 8 
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 8
   },
-  orderId: { 
-    fontSize: 15, 
-    fontWeight: "800" 
+  orderId: {
+    fontFamily: fontFamily.sansExtraBold,
+    fontSize: 15,
   },
-  meta: { 
-    fontSize: 12, 
-    marginTop: 3 
+  meta: {
+    fontSize: 12,
+    marginTop: 3
   },
-  statusBadge: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 4, 
-    paddingHorizontal: 10, 
-    paddingVertical: 5, 
-    borderRadius: 20 
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20
   },
-  statusText: { 
-    fontSize: 11, 
-    fontWeight: "700" 
+  statusText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 11,
   },
-  itemsBox: { 
-    marginTop: 12, 
-    borderRadius: 12, 
-    padding: 10, 
-    gap: 4 
+  itemsBox: {
+    marginTop: 12,
+    borderRadius: 14,
+    padding: 12,
+    gap: 4
   },
-  itemRow: { 
-    flexDirection: "row", 
-    gap: 6 
+  itemRow: {
+    flexDirection: "row",
+    gap: 6
   },
-  itemQty: { 
-    fontSize: 13, 
-    fontWeight: "700" 
+  itemQty: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 13,
   },
-  itemName: { 
-    fontSize: 13, 
-    flex: 1 
+  itemName: {
+    fontFamily: fontFamily.sansRegular,
+    fontSize: 13,
+    flex: 1,
   },
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10,
-    paddingTop: 10,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
   },
-  totalLabel: { 
-    fontSize: 13, 
-    fontWeight: "600" 
+  totalLabel: {
+    fontFamily: fontFamily.sansSemiBold,
+    fontSize: 13,
   },
-  totalValue: { 
-    fontSize: 16, 
-    fontWeight: "800" 
+  totalValue: {
+    fontFamily: fontFamily.sansExtraBold,
+    fontSize: 17,
+    fontVariant: ["tabular-nums"],
   },
-  contactRow: { 
-    flexDirection: "row", 
-    gap: 8, 
-    marginTop: 12 
+  contactRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 14
   },
-  contactButton: { 
-    flex: 1, 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    gap: 6, 
-    borderRadius: 12, 
-    paddingVertical: 10 
+  contactButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 14,
+    paddingVertical: 12
   },
-  whatsappButton: { 
-    backgroundColor: "#25D366" 
+  whatsappButton: {
+    backgroundColor: "#25D366"
   },
-  whatsappButtonText: { 
-    fontSize: 12, 
-    fontWeight: "700", 
-    color: "#fff" 
+  whatsappButtonText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 12,
+    color: "#fff",
   },
-  trackButton: { 
-    borderWidth: 1 
+  trackButton: {
+    borderWidth: 1
   },
-  trackButtonText: { 
-    fontSize: 12, 
-    fontWeight: "700" 
+  trackButtonText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 12,
   },
-  statusActionsRow: { 
-    flexDirection: "row", 
-    flexWrap: "wrap", 
-    gap: 8, 
-    marginTop: 12 
+  statusActionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 14
   },
-  statusChip: { 
-    borderRadius: 20, 
-    paddingHorizontal: 12, 
-    paddingVertical: 7 
+  statusChip: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8
   },
-  statusChipText: { 
-    fontSize: 11, 
-    fontWeight: "700", 
-    color: "#fff" 
+  statusChipText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 11,
+    color: "#fff",
   },
-  emptyState: { 
-    alignItems: "center", 
-    paddingVertical: 60 
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 60
   },
-  emptyIconWrap: { 
-    width: 64, 
-    height: 64, 
-    borderRadius: 20, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    marginBottom: 14 
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14
   },
-  emptyTitle: { 
-    fontSize: 16, 
-    fontWeight: "800", 
-    marginBottom: 4 
+  emptyTitle: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 16,
+    marginBottom: 4,
   },
-  emptyText: { 
-    fontSize: 13, 
-    textAlign: "center" 
+  emptyText: {
+    fontSize: 13,
+    textAlign: "center"
   },
   skelLine: { 
     height: 12, 

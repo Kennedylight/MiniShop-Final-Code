@@ -16,8 +16,8 @@ import { auth } from "@/services/firebase";
 import { getCurrentOwner } from "@/services/authService";
 import { Screen } from "@/components/Screen";
 import { Card } from "@/components/Card";
-import { Button } from "@/components/Button";
 import { useTheme } from "@/context/ThemeContext";
+import { fontFamily } from "@/constants/typography";
 
 type LinkStatus = "loading" | "ready" | "signInRequired" | "profileIncomplete" | "error";
 
@@ -65,7 +65,7 @@ export default function SharePage() {
         setUrl(`${cleanBaseUrl}/${shopSlug}`);
         setStatus("ready");
       } catch (error) {
-        console.log("SharePage error:", error);
+        console.warn("SharePage error:", error);
         setStatus("error");
       }
     }
@@ -109,7 +109,7 @@ export default function SharePage() {
     : null;
 
   return (
-    <Screen>
+    <Screen topInset={false}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text }]}>
           {t("share.title")}
@@ -120,7 +120,7 @@ export default function SharePage() {
       </View>
 
       {/* QR Code */}
-      <Card style={[styles.qrCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
+      <Card style={styles.qrCard}>
         {status === "loading" ? (
           <View style={styles.qrPlaceholder}>
             <Ionicons name="qr-code-outline" size={40} color={colors.muted} />
@@ -143,8 +143,8 @@ export default function SharePage() {
       </Card>
 
       {/* Link card with copy */}
-      <View style={[styles.linkCard, { backgroundColor: colors.card || "#f5f5f7" }]}>
-        <View style={[styles.linkIconWrap, { backgroundColor: colors.background || "#fff" }]}>
+      <View style={[styles.linkCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.linkIconWrap, { backgroundColor: colors.orangeSoft }]}>
           <Ionicons name="link-outline" size={18} color={colors.orange} />
         </View>
         <Text style={[styles.linkText, { color: colors.text }]} numberOfLines={1}>
@@ -154,8 +154,8 @@ export default function SharePage() {
           onPress={handleCopy}
           hitSlop={8}
           style={({ pressed }) => [
-            styles.copyButton, 
-            { backgroundColor: colors.background || "#fff" },
+            styles.copyButton,
+            { backgroundColor: colors.orangeSoft },
             pressed && { opacity: 0.7 }
           ]}
         >
@@ -174,6 +174,7 @@ export default function SharePage() {
           style={({ pressed }) => [
             styles.actionCard,
             styles.whatsappCard,
+            { shadowColor: "#25D366" },
             pressed && { opacity: 0.85 },
           ]}
         >
@@ -186,9 +187,11 @@ export default function SharePage() {
           style={({ pressed }) => [
             styles.actionCard,
             styles.shareCard,
-            { 
-              backgroundColor: colors.card || "#f5f5f7",
-              borderColor: colors.border || "rgba(0,0,0,0.06)"
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              shadowColor: colors.shadow,
+              shadowOpacity: 0.06,
             },
             pressed && { opacity: 0.85 },
           ]}
@@ -206,96 +209,102 @@ export default function SharePage() {
 const RADIUS = 18;
 
 const styles = StyleSheet.create({
-  header: { marginBottom: 20 },
-  title: { 
-    fontSize: 26, 
-    fontWeight: "800", 
-    letterSpacing: -0.3 
+  header: { marginBottom: 24 },
+  title: {
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 28,
+    letterSpacing: -0.3,
   },
-  subtitle: { 
-    fontSize: 14, 
-    marginTop: 4 
+  subtitle: {
+    fontFamily: fontFamily.sansRegular,
+    fontSize: 14,
+    marginTop: 6,
   },
-  qrCard: { 
-    alignItems: "center", 
-    borderRadius: RADIUS, 
-    paddingVertical: 24, 
-    marginBottom: 16 
+  qrCard: {
+    alignItems: "center",
+    borderRadius: RADIUS,
+    paddingVertical: 28,
+    marginBottom: 16,
   },
-  qrImage: { 
-    width: 180, 
-    height: 180 
+  qrImage: {
+    width: 180,
+    height: 180
   },
-  qrPlaceholder: { 
-    width: 180, 
-    height: 180, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    gap: 8 
+  qrPlaceholder: {
+    width: 180,
+    height: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8
   },
-  qrErrorText: { 
-    fontSize: 12, 
-    textAlign: "center", 
-    paddingHorizontal: 12 
+  qrErrorText: {
+    fontSize: 12,
+    textAlign: "center",
+    paddingHorizontal: 12
   },
-  qrHint: { 
-    fontSize: 13, 
-    fontWeight: "600", 
-    marginTop: 14 
+  qrHint: {
+    fontFamily: fontFamily.sansSemiBold,
+    fontSize: 13,
+    marginTop: 16,
   },
   linkCard: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: RADIUS,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     marginBottom: 20,
-    gap: 10,
+    gap: 12,
+    borderWidth: 1,
   },
   linkIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  linkText: { 
-    flex: 1, 
-    fontSize: 14, 
-    fontWeight: "700" 
+  linkText: {
+    flex: 1,
+    fontFamily: fontFamily.sansBold,
+    fontSize: 14,
   },
   copyButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  actionsRow: { 
-    flexDirection: "row", 
-    gap: 12 
+  actionsRow: {
+    flexDirection: "row",
+    gap: 12
   },
-  actionCard: { 
-    flex: 1, 
-    borderRadius: RADIUS, 
-    paddingVertical: 16, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    gap: 6 
+  actionCard: {
+    flex: 1,
+    borderRadius: RADIUS,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
-  whatsappCard: { 
-    backgroundColor: "#25D366" 
+  whatsappCard: {
+    backgroundColor: "#25D366"
   },
-  whatsappText: { 
-    fontSize: 13, 
-    fontWeight: "700", 
-    color: "#fff" 
+  whatsappText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 13,
+    color: "#fff",
   },
   shareCard: {
     borderWidth: 1,
   },
-  shareText: { 
-    fontSize: 13, 
-    fontWeight: "700" 
+  shareText: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 13,
   },
 });

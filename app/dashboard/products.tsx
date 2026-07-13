@@ -10,9 +10,9 @@ import {
   Image,
   Animated,
   PanResponder,
-  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -35,6 +35,8 @@ import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { useTheme } from "@/context/ThemeContext";
 import { useTranslation } from "react-i18next";
+import { fontFamily } from "@/constants/typography";
+import { getErrorMessage } from "@/lib/errors";
 
 function SkeletonCard() {
   const { colors } = useTheme();
@@ -129,6 +131,10 @@ export default function Products() {
   const [formVisible, setFormVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
   const sheetTranslateY = useRef(new Animated.Value(0)).current;
   const closeModal = () => {
@@ -212,46 +218,35 @@ export default function Products() {
     }
   };
 
-  // const takePhoto = async () => {
-  //   const permission = await ImagePicker.requestCameraPermissionsAsync();
+  const takePhoto = async () => {
+    if (!cameraPermission?.granted) {
+      const result = await requestCameraPermission();
+      if (!result.granted) {
+        Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
+        return;
+      }
+    }
+    setCameraVisible(true);
+  };
 
-  //   if (!permission.granted) {
-  //     Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
-  //     return;
-  //   }
-
-  //   const result = await ImagePicker.launchCameraAsync({
-  //     mediaTypes: ["images"],
-  //     quality: Platform.OS === "android" ? 0.5 : 0.75,
-  //     allowsEditing: true,
-  //   });
-
-  //   if (!result.canceled) {
-  //     setImage(result.assets[0].uri);
-  //   }
-  // };
-
-const takePhoto = async () => {
-  const permission = await ImagePicker.requestCameraPermissionsAsync();
-  if (!permission.granted) {
-    Alert.alert("Permission refusée", "Autorisez l'accès à la caméra.");
-    return;
-  }
-
-  const result = await ImagePicker.launchCameraAsync({
-    mediaTypes: ['images'],
-    quality: 0.75,
-  });
-
-  if (!result.canceled) {
-    const manipulated = await ImageManipulator.manipulateAsync(
-      result.assets[0].uri,
-      [{ resize: { width: 1080 } }], // redimensionne, garde le ratio
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-    );
-    setImage(manipulated.uri);
-  }
-};
+  const capturePhoto = async () => {
+    if (!cameraRef.current || capturing) return;
+    try {
+      setCapturing(true);
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.75 });
+      if (photo?.uri) {
+        const manipulated = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ resize: { width: 1080 } }], // redimensionne, garde le ratio
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
+        );
+        setImage(manipulated.uri);
+      }
+      setCameraVisible(false);
+    } finally {
+      setCapturing(false);
+    }
+  };
   const clearForm = () => {
     setName("");
     setPrice("");
@@ -316,8 +311,8 @@ const takePhoto = async () => {
       clearForm();
       setFormVisible(false);
       await load();
-    } catch (e: any) {
-      Alert.alert(t("products.productError"), e.message);
+    } catch (e) {
+      Alert.alert(t("products.productError"), getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -331,7 +326,7 @@ const takePhoto = async () => {
         style: "destructive",
         onPress: async () => {
           await deleteProduct(productId).catch((e) =>
-            Alert.alert(t("products.productError"), e.message),
+            Alert.alert(t("products.productError"), getErrorMessage(e)),
           );
           await load();
         },
@@ -344,7 +339,7 @@ const takePhoto = async () => {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Screen>
+      <Screen topInset={false}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -441,7 +436,7 @@ const takePhoto = async () => {
         onPress={openAddForm}
         style={({ pressed }) => [
           styles.fab,
-          { backgroundColor: colors.orange },
+          { backgroundColor: colors.orange, shadowColor: colors.orange },
           !ownerCurrency && { opacity: 0.5 },
           pressed && { opacity: 0.85 },
         ]}
@@ -454,38 +449,41 @@ const takePhoto = async () => {
         visible={formVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setFormVisible(false)}
+        onRequestClose={closeModal}
       >
         <View style={styles.modalOverlay}>
-          <View
+          <Animated.View
             style={[
               styles.modalSheet,
               { backgroundColor: colors.background || "#fff" },
+              { transform: [{ translateY: sheetTranslateY }] },
             ]}
           >
-            <View
-              style={[
-                styles.modalHandle,
-                { backgroundColor: colors.border || "rgba(0,0,0,0.15)" },
-              ]}
-            />
-
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>
-                {editingId
-                  ? t("products.editProduct")
-                  : t("products.addProduct")}
-              </Text>
-              <Pressable
-                onPress={() => setFormVisible(false)}
-                hitSlop={10}
+            <View {...panResponder.panHandlers}>
+              <View
                 style={[
-                  styles.modalClose,
-                  { backgroundColor: colors.card || "#f5f5f7" },
+                  styles.modalHandle,
+                  { backgroundColor: colors.border || "rgba(0,0,0,0.15)" },
                 ]}
-              >
-                <Ionicons name="close" size={22} color={colors.text} />
-              </Pressable>
+              />
+
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  {editingId
+                    ? t("products.editProduct")
+                    : t("products.addProduct")}
+                </Text>
+                <Pressable
+                  onPress={closeModal}
+                  hitSlop={10}
+                  style={[
+                    styles.modalClose,
+                    { backgroundColor: colors.card || "#f5f5f7" },
+                  ]}
+                >
+                  <Ionicons name="close" size={22} color={colors.text} />
+                </Pressable>
+              </View>
             </View>
 
             <KeyboardAwareScrollView
@@ -549,10 +547,8 @@ const takePhoto = async () => {
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                  {t("products.productName")}
-                </Text>
                 <Input
+                  label={t("products.productName")}
                   placeholder={t("products.productName")}
                   value={name}
                   onChangeText={setName}
@@ -560,10 +556,8 @@ const takePhoto = async () => {
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                  {t("products.price")}
-                </Text>
                 <Input
+                  label={t("products.price")}
                   placeholder={`${t("products.price")} (${currency})`}
                   keyboardType="decimal-pad"
                   value={price}
@@ -572,13 +566,12 @@ const takePhoto = async () => {
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                  {t("products.description")}
-                </Text>
                 <Input
+                  label={t("products.description")}
                   placeholder={t("products.description")}
                   value={desc}
                   onChangeText={setDesc}
+                  multiline
                 />
               </View>
 
@@ -592,6 +585,37 @@ const takePhoto = async () => {
                 loading={loading}
               />
             </KeyboardAwareScrollView>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Camera modal */}
+      <Modal
+        visible={cameraVisible}
+        animationType="slide"
+        onRequestClose={() => setCameraVisible(false)}
+      >
+        <View style={styles.cameraRoot}>
+          {cameraVisible && (
+            <CameraView ref={cameraRef} style={styles.cameraView} facing="back" />
+          )}
+
+          <Pressable
+            onPress={() => setCameraVisible(false)}
+            hitSlop={10}
+            style={[styles.cameraClose, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+          >
+            <Ionicons name="close" size={22} color="#fff" />
+          </Pressable>
+
+          <View style={styles.cameraControls}>
+            <Pressable
+              onPress={capturePhoto}
+              disabled={capturing}
+              style={[styles.captureButton, capturing && { opacity: 0.6 }]}
+            >
+              <View style={styles.captureButtonInner} />
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -615,37 +639,37 @@ const styles = StyleSheet.create({
   },
   currencyBannerText: {
     flex: 1,
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: "600",
   },
   usageCard: {
     borderRadius: RADIUS,
-    padding: 14,
+    padding: 18,
     marginBottom: 20,
   },
   usageTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   usageText: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 13,
-    fontWeight: "700",
   },
   usagePlan: {
+    fontFamily: fontFamily.sansExtraBold,
     fontSize: 11,
-    fontWeight: "800",
     letterSpacing: 0.5,
   },
   usageTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 4,
     overflow: "hidden",
   },
   usageFill: {
     height: "100%",
-    borderRadius: 3,
+    borderRadius: 4,
   },
   grid: {
     flexDirection: "row",
@@ -686,11 +710,12 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   emptyTitle: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 16,
-    fontWeight: "800",
     marginBottom: 4,
   },
   emptyText: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 13,
     textAlign: "center",
   },
@@ -698,15 +723,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.36,
+    shadowRadius: 18,
     elevation: 8,
     zIndex: 10,
   },
@@ -736,8 +760,8 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "800",
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 20,
   },
   modalClose: {
     width: 32,
@@ -750,9 +774,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   fieldLabel: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: 8,
   },
   photoPicker: {
     alignSelf: "flex-start",
@@ -787,8 +811,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   photoPlaceholderText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 11,
-    fontWeight: "600",
   },
   skeletonImage: {
     width: "100%",
@@ -811,5 +835,44 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 34,
     borderRadius: 10,
+  },
+  cameraRoot: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  cameraView: {
+    flex: 1,
+  },
+  cameraClose: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cameraControls: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  captureButton: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    borderWidth: 4,
+    borderColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  captureButtonInner: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#fff",
   },
 });

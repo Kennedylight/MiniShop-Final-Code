@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/components/Button";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useTheme } from "@/context/ThemeContext";
+import { fontFamily } from "@/constants/typography";
 
 const { width } = Dimensions.get("window");
 
@@ -115,25 +116,6 @@ export default function Index() {
   const isLast = activeIndex === SLIDES.length - 1;
   const isFirst = activeIndex === 0;
 
-  // Créer un style dynamique pour les éléments qui utilisent colors.primary
-  const dynamicStyles = {
-    dotActive: {
-      backgroundColor: colors.primary,
-    },
-    iconCircle: {
-      backgroundColor: colors.primary,
-    },
-    bulletIconWrap: {
-      backgroundColor: colors.card === '#1a1a1a' ? '#2a2a2a' : '#ffffff',
-    },
-    bulletRow: {
-      backgroundColor: colors.card,
-    },
-    loginLinkBold: {
-      color: colors.primary,
-    },
-  };
-
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <Animated.View style={[styles.flex, { opacity: contentOpacity }]}>
@@ -172,7 +154,8 @@ export default function Index() {
             renderItem={({ item }) => (
               <View style={[styles.slide, { width }]}>
                 <View style={styles.iconStage}>
-                  <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
+                  <View style={[styles.iconGlow, { backgroundColor: colors.orange, shadowColor: colors.orange }]} />
+                  <View style={[styles.iconCircle, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}>
                     <Ionicons name={item.icon} size={44} color="#fff" />
                   </View>
                 </View>
@@ -295,8 +278,8 @@ const styles = StyleSheet.create({
     width: 20,
   },
   skipText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 14,
-    fontWeight: "600",
   },
   slide: {
     alignItems: "center",
@@ -304,55 +287,70 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   iconStage: {
-    width: 130,
-    height: 130,
+    width: 140,
+    height: 140,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+  },
+  iconGlow: {
+    position: "absolute",
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    opacity: 0.28,
+    shadowOpacity: 0.9,
+    shadowRadius: 32,
+    shadowOffset: { width: 0, height: 0 },
   },
   iconCircle: {
-    width: 76,
-    height: 76,
-    borderRadius: 24,
+    width: 80,
+    height: 80,
+    borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
+    shadowOpacity: 0.28,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   slideTitle: {
-    fontSize: 22,
-    fontWeight: "800",
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 24,
     textAlign: "center",
     marginBottom: 8,
     letterSpacing: -0.3,
   },
   slideText: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
+    lineHeight: 21,
+    marginBottom: 24,
     paddingHorizontal: 8,
   },
   bulletList: {
     width: "100%",
-    gap: 10,
+    gap: 12,
   },
   bulletRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    gap: 12,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
   bulletIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
+    width: 32,
+    height: 32,
+    borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
   },
   bulletText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: "600",
     flex: 1,
   },
   footer: {
@@ -379,9 +377,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   loginLinkText: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
   },
   loginLinkBold: {
-    fontWeight: "700",
+    fontFamily: fontFamily.sansBold,
   },
 });

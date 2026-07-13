@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { onRequest } from "firebase-functions/v2/https";
+import { onRequest, Request } from "firebase-functions/v2/https";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import Stripe from "stripe";
@@ -9,6 +9,10 @@ import twilio from "twilio";
 admin.initializeApp();
 const db = admin.firestore();
 const allowCors = cors({ origin: true });
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "An unexpected error occurred.";
+}
 
 // Essai gratuit (jours) — source de vérité côté serveur.
 const TRIAL_DAYS = 3;
@@ -32,7 +36,7 @@ const PRICE_BY_PLAN: Record<string, string | undefined> = {
   premium: process.env.STRIPE_PRICE_PREMIUM,
 };
 
-async function getUidFromAuthHeader(req: any) {
+async function getUidFromAuthHeader(req: Request) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
   if (!token) throw new Error("Missing auth token");
@@ -79,8 +83,8 @@ export const setAdminClaim = onRequest({ invoker: "public" }, (req, res) =>
       await admin.auth().setCustomUserClaims(targetUid, { admin: true });
       console.log(`[setAdminClaim] admin claim set on ${targetUid}`);
       return res.json({ ok: true, uid: targetUid });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );
@@ -106,8 +110,8 @@ export const revokeAdminClaim = onRequest({ invoker: "public" }, (req, res) =>
       await admin.auth().setCustomUserClaims(targetUid, { admin: false });
       console.log(`[revokeAdminClaim] admin claim revoked on ${targetUid}`);
       return res.json({ ok: true, uid: targetUid });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );
@@ -185,8 +189,8 @@ export const sendTrialReminders = onSchedule("0 9 * * *", async () => {
       });
       await doc.ref.set({ ...patch, updatedAt: now }, { merge: true });
       console.log(`[trialReminder] sent to ${doc.id}`);
-    } catch (err: any) {
-      console.error(`[trialReminder] failed for ${doc.id}`, err?.message);
+    } catch (err) {
+      console.error(`[trialReminder] failed for ${doc.id}`, errorMessage(err));
     }
   }
 });
@@ -240,8 +244,8 @@ export const createCheckoutSession = onRequest({ invoker: "public" }, (req, res)
         metadata: { ownerId: uid, plan },
       });
       return res.json({ url: session.url });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );
@@ -265,8 +269,8 @@ export const createCustomerPortal = onRequest({ invoker: "public" }, (req, res) 
         return_url: returnUrl,
       });
       return res.json({ url: session.url });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );
@@ -276,12 +280,12 @@ export const stripeWebhook = onRequest({ invoker: "public" }, async (req, res) =
   let event: Stripe.Event;
   try {
     event = getStripe().webhooks.constructEvent(
-      (req as any).rawBody,
+      req.rawBody,
       sig as string,
       process.env.STRIPE_WEBHOOK_SECRET || "",
     );
-  } catch (err: any) {
-    res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err) {
+    res.status(400).send(`Webhook Error: ${errorMessage(err)}`);
     return;
   }
 
@@ -339,19 +343,31 @@ export const stripeWebhook = onRequest({ invoker: "public" }, async (req, res) =
         }
       }
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error("[stripeWebhook] handler error", err);
-    res.status(500).send(`Handler error: ${err.message}`);
+    res.status(500).send(`Handler error: ${errorMessage(err)}`);
     return;
   }
 
   res.json({ received: true });
 });
 
-function buildOrderMessage(order: any) {
+type OrderNotificationItem = { name: string; quantity: number; price: number };
+
+type OrderNotificationData = {
+  items: OrderNotificationItem[];
+  shopName: string;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress: string;
+  estimatedTotal: number;
+  notes?: string;
+};
+
+function buildOrderMessage(order: OrderNotificationData) {
   const lines = order.items
     .map(
-      (i: any, idx: number) =>
+      (i, idx) =>
         `${idx + 1}. ${i.name} — Qty: ${i.quantity} — $${i.price}`,
     )
     .join("\n");
@@ -378,11 +394,13 @@ export const sendNewOrderNotification = onRequest({ invoker: "public" }, (req, r
       await client.messages.create({
         from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
         to: `whatsapp:${owner.whatsapp}`,
-        body: buildOrderMessage(order),
+        // Cast justifié : la forme du document `orders` est garantie par
+        // orderService.ts côté client, Firestore ne la type pas statiquement.
+        body: buildOrderMessage(order as OrderNotificationData),
       });
       return res.json({ ok: true });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );
@@ -405,8 +423,8 @@ export const sendOrderStatusNotification = onRequest({ invoker: "public" }, (req
         body: `Hello ${order.customerName}, your order from ${order.shopName} is now: ${String(status).replace(/_/g, " ")}.`,
       });
       return res.json({ ok: true });
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message });
+    } catch (e) {
+      return res.status(500).json({ error: errorMessage(e) });
     }
   }),
 );

@@ -1,22 +1,44 @@
 import { ReactNode } from 'react';
-import { View, ScrollView, StyleSheet, ViewStyle } from 'react-native';
+import { View, ScrollView, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 
-export function Screen({ children, scroll = true, style }: { children: ReactNode; scroll?: boolean; style?: ViewStyle }) {
+type Props = {
+  children: ReactNode;
+  scroll?: boolean;
+  /** Passe à false quand un header de navigation gère déjà la zone sûre du haut (onglets du dashboard). */
+  topInset?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function Screen({ children, scroll = true, topInset = true, style }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const safe = [styles.safe, { paddingTop: insets.top, paddingBottom: insets.bottom }, style];
+  const paddingTop = topInset ? insets.top : 0;
 
-  if (!scroll) return <View style={safe}>{children}</View>;
+  if (!scroll) {
+    return (
+      <View style={[styles.safe, { backgroundColor: colors.bg, paddingTop, paddingBottom: insets.bottom }, style]}>
+        {children}
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.safe, { backgroundColor: colors.bg }]}>
-      <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: paddingTop + 20, paddingBottom: insets.bottom + 20 },
+        ]}
+      >
+        {children}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { padding: 20, gap: 16 },
+  content: { paddingHorizontal: 20, gap: 16 },
 });

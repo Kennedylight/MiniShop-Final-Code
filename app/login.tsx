@@ -3,11 +3,7 @@ import {
   Alert,
   Text,
   View,
-  TextInput,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -15,9 +11,12 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 import { loginOwner } from "@/services/authService";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTheme } from "@/context/ThemeContext";
+import { fontFamily } from "@/constants/typography";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -31,9 +30,9 @@ export default function Login() {
     try {
       setLoading(true);
       await loginOwner(email, password);
-      router.replace("/dashboard");
-    } catch (e: any) {
-      Alert.alert(t("auth.login.loginFailed"), e.message);
+      router.replace("/dashboard/products");
+    } catch (e) {
+      Alert.alert(t("auth.login.loginFailed"), getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -49,7 +48,7 @@ export default function Login() {
       >
         {/* Logo / Icon */}
         <View style={styles.logoWrap}>
-          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+          <View style={[styles.logoCircle, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}>
             <Ionicons name="storefront" size={30} color="#fff" />
           </View>
         </View>
@@ -62,58 +61,38 @@ export default function Login() {
 
         {/* Email field */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>{t("auth.login.email")}</Text>
-          <View style={styles.inputWrap}>
-            <Ionicons
-              name="mail-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.login.emailPlaceholder")}
-              placeholderTextColor={colors.muted}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              value={email}
-              onChangeText={setEmail}
-              style={[styles.input, { color: colors.text }]}
-            />
-          </View>
+          <Input
+            label={t("auth.login.email")}
+            icon="mail-outline"
+            placeholder={t("auth.login.emailPlaceholder")}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+          />
         </View>
 
         {/* Password field */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>{t("auth.login.password")}</Text>
-          <View style={styles.inputWrap}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.login.passwordPlaceholder")}
-              placeholderTextColor={colors.muted}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-              value={password}
-              onChangeText={setPassword}
-              style={[styles.input, { paddingRight: 40 ,  color: colors.text }]}
-            />
-            <Pressable
-              onPress={() => setShowPassword((v) => !v)}
-              style={styles.eyeButton}
-              hitSlop={10}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color={colors.muted}
-              />
-            </Pressable>
-          </View>
+          <Input
+            label={t("auth.login.password")}
+            icon="lock-closed-outline"
+            placeholder={t("auth.login.passwordPlaceholder")}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            value={password}
+            onChangeText={setPassword}
+            rightSlot={
+              <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={10}>
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color={colors.muted}
+                />
+              </Pressable>
+            }
+          />
         </View>
 
         {/* Forgot password */}
@@ -122,7 +101,7 @@ export default function Login() {
           style={styles.forgotWrap}
           hitSlop={8}
         >
-          <Text style={[styles.forgotText, { color: colors.primary }]}> 
+          <Text style={[styles.forgotText, { color: colors.orange }]}>
             {t("auth.login.forgotPassword")}
           </Text>
         </Pressable>
@@ -138,7 +117,7 @@ export default function Login() {
         <View style={styles.signupRow}>
           <Text style={[styles.signupText, { color: colors.muted }]}>{t("auth.login.noAccount")} </Text>
           <Pressable onPress={() => router.push("/signup")} hitSlop={8}>
-            <Text style={[styles.signupLink, { color: colors.primary }]}>{t("auth.login.createOne")}</Text>
+            <Text style={[styles.signupLink, { color: colors.orange }]}>{t("auth.login.createOne")}</Text>
           </Pressable>
         </View>
       </KeyboardAwareScrollView>
@@ -155,76 +134,57 @@ const styles = StyleSheet.create({
   },
   logoWrap: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+    width: 68,
+    height: 68,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   header: {
     alignItems: "center",
     marginBottom: 32,
   },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
+    fontFamily: fontFamily.displaySemiBold,
+    fontSize: 28,
     textAlign: "center",
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   subtitle: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
-    marginTop: 6,
+    marginTop: 8,
     textAlign: "center",
   },
   field: {
     marginBottom: 16,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    fontSize: 15,
-  },
-  eyeButton: {
-    position: "absolute",
-    right: 14,
-    padding: 4,
-  },
   forgotWrap: {
     alignSelf: "flex-end",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   forgotText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: "600",
   },
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 24,
   },
   signupText: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
   },
   signupLink: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 14,
-    fontWeight: "700",
   },
 });

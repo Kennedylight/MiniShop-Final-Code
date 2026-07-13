@@ -614,7 +614,7 @@ Au-delà de la parité mobile, ajouter :
 ### `.env.example` (web)
 
 ```
-VITE_FIREBASE_API_KEY=AIzaSyAlsS9vwHTDFSZb4jVxE1yqMQ3BRmAGJEk
+VITE_FIREBASE_API_KEY=AIzaSy...votre-cle-firebase
 VITE_FIREBASE_AUTH_DOMAIN=mystore-ff354.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=mystore-ff354
 VITE_FIREBASE_STORAGE_BUCKET=mystore-ff354.firebasestorage.app

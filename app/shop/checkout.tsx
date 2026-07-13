@@ -9,6 +9,7 @@ import { createOrder } from "@/services/orderService";
 import { OrderItem } from "@/types/Order";
 import { formatPrice } from "@/constants/currency";
 import { useTheme } from "@/context/ThemeContext";
+import { getErrorMessage } from "@/lib/errors";
 export default function Checkout() {
   const { t } = useTranslation();
    const { colors } = useTheme();
@@ -43,8 +44,8 @@ export default function Checkout() {
         pathname: "/shop/confirmation",
         params: { orderId, shopName: params.shopName },
       });
-    } catch (e: any) {
-      Alert.alert(t("shop.orderError"), e.message);
+    } catch (e) {
+      Alert.alert(t("shop.orderError"), getErrorMessage(e));
     }
   };
   const continueShopping = () => {

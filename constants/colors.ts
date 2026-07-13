@@ -9,12 +9,20 @@ export const lightColors = {
   accent: '#FFB703',
   bg: '#F7F9FC',
   card: '#FFFFFF',
+  cardElevated: '#FFFFFF',
   text: '#071633',
   muted: '#68748A',
   danger: '#DC2626',
   success: '#16A34A',
+  warning: '#D97706',
+  warningSoft: '#FEF3E2',
+  info: '#3B82F6',
+  infoSoft: '#EAF1FE',
   border: '#E5EAF2',
   background: '#F7F9FC',
+  // Ombre teintée marine (jamais de gris/noir pur) + halo pour les CTA.
+  shadow: '#0B1F4D',
+  glow: 'rgba(255, 107, 0, 0.35)',
 };
 
 export const darkColors = {
@@ -28,12 +36,19 @@ export const darkColors = {
   accent: '#FFB703',
   bg: '#0B0F19',
   card: '#151B2B',
+  cardElevated: '#1B2338',
   text: '#F1F5F9',
   muted: '#8A93A6',
   danger: '#F87171',
   success: '#22C55E',
+  warning: '#FBBF24',
+  warningSoft: '#2A2113',
+  info: '#60A5FA',
+  infoSoft: '#152238',
   border: '#232B3D',
   background: '#0B0F19',
+  shadow: '#000000',
+  glow: 'rgba(255, 107, 0, 0.28)',
 };
 
 export const Colors = lightColors;

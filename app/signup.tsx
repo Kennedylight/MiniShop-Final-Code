@@ -3,11 +3,7 @@ import {
   Alert,
   Text,
   View,
-  TextInput,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -15,11 +11,12 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 import { registerOwner } from "@/services/authService";
-import { CurrencyPicker } from "@/components/CurrencyPicker";
 import { useTheme } from "@/context/ThemeContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { DEFAULT_CURRENCY } from "@/constants/currency";
+import { fontFamily } from "@/constants/typography";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function Signup() {
   const { t } = useTranslation();
@@ -30,22 +27,16 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
 
-  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
     try {
       setLoading(true);
-      await registerOwner({ fullName, shopName, email, password, whatsapp, currency });
+      await registerOwner({ fullName, shopName, email, password, whatsapp });
       router.replace("/pricing");
-    } catch (e: any) {
-      console.log("Signup error:", e);
-      console.log("Response:", e?.response?.data);
-      console.log("Status:", e?.response?.status);
-      console.log("URL:", e?.config?.url);
-      console.log("Method:", e?.config?.method);
-      Alert.alert(t("auth.signup.signupFailed"), e.message);
+    } catch (e) {
+      Alert.alert(t("auth.signup.signupFailed"), getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -61,7 +52,7 @@ export default function Signup() {
       >
         {/* Logo */}
         <View style={styles.logoWrap}>
-          <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+          <View style={[styles.logoCircle, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}>
             <Ionicons name="storefront" size={30} color="#fff" />
           </View>
         </View>
@@ -76,159 +67,71 @@ export default function Signup() {
           </Text>
         </View>
 
-        {/* Full name */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t("auth.signup.fullName")}
-          </Text>
-          <View style={[styles.inputWrap, { 
-            backgroundColor: colors.card,
-            borderColor: colors.border || 'rgba(0,0,0,0.06)'
-          }]}>
-            <Ionicons
-              name="person-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.signup.fullName")}
-              placeholderTextColor={colors.muted}
-              autoCapitalize="words"
-              value={fullName}
-              onChangeText={setFullName}
-              style={[styles.input, { color: colors.text }]}
-            />
-          </View>
+          <Input
+            label={t("auth.signup.fullName")}
+            icon="person-outline"
+            placeholder={t("auth.signup.fullName")}
+            autoCapitalize="words"
+            value={fullName}
+            onChangeText={setFullName}
+          />
         </View>
 
-        {/* Shop name */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t("auth.signup.shopName")}
-          </Text>
-          <View style={[styles.inputWrap, { 
-            backgroundColor: colors.card,
-            borderColor: colors.border || 'rgba(0,0,0,0.06)'
-          }]}>
-            <Ionicons
-              name="storefront-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.signup.shopName")}
-              placeholderTextColor={colors.muted}
-              autoCapitalize="words"
-              value={shopName}
-              onChangeText={setShopName}
-              style={[styles.input, { color: colors.text }]}
-            />
-          </View>
+          <Input
+            label={t("auth.signup.shopName")}
+            icon="storefront-outline"
+            placeholder={t("auth.signup.shopName")}
+            autoCapitalize="words"
+            value={shopName}
+            onChangeText={setShopName}
+          />
         </View>
 
-        {/* Email */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t("auth.signup.email")}
-          </Text>
-          <View style={[styles.inputWrap, { 
-            backgroundColor: colors.card,
-            borderColor: colors.border || 'rgba(0,0,0,0.06)'
-          }]}>
-            <Ionicons
-              name="mail-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.signup.emailPlaceholder")}
-              placeholderTextColor={colors.muted}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              value={email}
-              onChangeText={setEmail}
-              style={[styles.input, { color: colors.text }]}
-            />
-          </View>
+          <Input
+            label={t("auth.signup.email")}
+            icon="mail-outline"
+            placeholder={t("auth.signup.emailPlaceholder")}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+          />
         </View>
 
-        {/* WhatsApp */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t("auth.signup.whatsapp")}
-          </Text>
-          <View style={[styles.inputWrap, { 
-            backgroundColor: colors.card,
-            borderColor: colors.border || 'rgba(0,0,0,0.06)'
-          }]}>
-            <Ionicons
-              name="logo-whatsapp"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.signup.whatsapp")}
-              placeholderTextColor={colors.muted}
-              keyboardType="phone-pad"
-              value={whatsapp}
-              onChangeText={setWhatsapp}
-              style={[styles.input, { color: colors.text }]}
-            />
-          </View>
+          <Input
+            label={t("auth.signup.whatsapp")}
+            icon="logo-whatsapp"
+            placeholder={t("auth.signup.whatsapp")}
+            keyboardType="phone-pad"
+            value={whatsapp}
+            onChangeText={setWhatsapp}
+          />
         </View>
 
-        {/* Currency */}
-        <View style={styles.fieldWrap}>
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>
-            {t("auth.signup.currency")}
-          </Text>
-          <CurrencyPicker value={currency} onChange={setCurrency} />
-          <Text style={[styles.currencyHint, { color: colors.muted }]}>
-            {t("auth.signup.currencyLocked")}
-          </Text>
-        </View>
-
-        {/* Password */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            {t("auth.signup.password")}
-          </Text>
-          <View style={[styles.inputWrap, { 
-            backgroundColor: colors.card,
-            borderColor: colors.border || 'rgba(0,0,0,0.06)'
-          }]}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={19}
-              color={colors.muted}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              placeholder={t("auth.signup.passwordPlaceholder")}
-              placeholderTextColor={colors.muted}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-              value={password}
-              onChangeText={setPassword}
-              style={[styles.input, { color: colors.text, paddingRight: 40 }]}
-            />
-            <Pressable
-              onPress={() => setShowPassword((v) => !v)}
-              style={styles.eyeButton}
-              hitSlop={10}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color={colors.muted}
-              />
-            </Pressable>
-          </View>
+          <Input
+            label={t("auth.signup.password")}
+            icon="lock-closed-outline"
+            placeholder={t("auth.signup.passwordPlaceholder")}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            value={password}
+            onChangeText={setPassword}
+            rightSlot={
+              <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={10}>
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color={colors.muted}
+                />
+              </Pressable>
+            }
+          />
         </View>
 
         {/* Submit */}
@@ -240,7 +143,7 @@ export default function Signup() {
             {t("auth.signup.alreadyHaveAccount")}{" "}
           </Text>
           <Pressable onPress={() => router.push("/login")} hitSlop={8}>
-            <Text style={[styles.loginLink, { color: colors.primary }]}>
+            <Text style={[styles.loginLink, { color: colors.orange }]}>
               {t("auth.signup.login")}
             </Text>
           </Pressable>
@@ -262,77 +165,46 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+    width: 68,
+    height: 68,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-  },
-  fieldWrap: {
-    marginBottom: 16
-  },
-  currencyHint: {
-    fontSize: 12,
-    marginTop: 6,
-  },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 6,
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   header: {
     alignItems: "center",
-    marginBottom: 28,
+    marginBottom: 32,
   },
   title: {
+    fontFamily: fontFamily.displaySemiBold,
     fontSize: 26,
-    fontWeight: "800",
     textAlign: "center",
     letterSpacing: -0.3,
   },
   subtitle: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
-    marginTop: 6,
+    marginTop: 8,
     textAlign: "center",
   },
   field: {
     marginBottom: 16,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    fontSize: 15,
-  },
-  eyeButton: {
-    position: "absolute",
-    right: 14,
-    padding: 4,
-  },
   loginRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 24,
   },
   loginText: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 14,
   },
   loginLink: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 14,
-    fontWeight: "700",
   },
 });

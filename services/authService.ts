@@ -12,7 +12,6 @@ export async function registerOwner(input: {
   email: string;
   password: string;
   shopName: string;
-  currency: string;
   phone?: string;
   whatsapp?: string;
 }) {
@@ -26,14 +25,13 @@ export async function registerOwner(input: {
     fullName: input.fullName.trim(),
     shopName: input.shopName.trim(),
     shopSlug: slugify(input.shopName) || cred.user.uid,
-    currency: input.currency,
     subscriptionStatus: "inactive",
     accountStatus: "active",
     createdAt: now,
     updatedAt: now,
   };
 
-  // Comme sur le web : on n'ajoute la clé que si la valeur existe
+  // La devise se définit désormais uniquement dans le profil, après inscription.
   if (input.phone) owner.phone = input.phone.trim();
   if (input.whatsapp) owner.whatsapp = input.whatsapp.trim();
 

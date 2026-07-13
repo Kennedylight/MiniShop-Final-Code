@@ -1,20 +1,25 @@
 import { Image, Text, View, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Product } from '@/types/Product';
 import { Card } from './Card';
 import { useTheme } from '@/context/ThemeContext';
 import { formatPrice } from '@/constants/currency';
+import { fontFamily } from '@/constants/typography';
 
-export function ProductCard({ 
-  product, 
-  onEdit, 
-  onDelete 
-}: { 
-  product: Product; 
+export function ProductCard({
+  product,
+  onEdit,
+  onDelete,
+  onAdd,
+}: {
+  product: Product;
   onEdit?: () => void;
   onDelete?: () => void;
+  onAdd?: () => void;
 }) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Card style={[styles.card, { backgroundColor: 'transparent' }]}>
@@ -61,13 +66,11 @@ export function ProductCard({
         
 
         {/* Ligne d'actions */}
-        {( onEdit || onDelete) && (
+        {(onEdit || onDelete) && (
           <View style={styles.actionsRow}>
-           
-
             <View style={styles.iconGroup}>
               {onEdit && (
-                <Pressable 
+                <Pressable
                   onPress={onEdit}
                   style={({ pressed }) => [
                     styles.iconButton,
@@ -79,9 +82,9 @@ export function ProductCard({
                   <Text style={[styles.iconButtonText, { color: colors.text || '#374151' }]}>Edit</Text>
                 </Pressable>
               )}
-              
+
               {onDelete && (
-                <Pressable 
+                <Pressable
                   onPress={onDelete}
                   style={({ pressed }) => [
                     styles.iconButton,
@@ -96,6 +99,20 @@ export function ProductCard({
             </View>
           </View>
         )}
+
+        {onAdd && (
+          <Pressable
+            onPress={onAdd}
+            style={({ pressed }) => [
+              styles.addButton,
+              { backgroundColor: colors.orange },
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Ionicons name="bag-add-outline" size={16} color="#fff" />
+            <Text style={styles.addButtonText}>{t('shop.orderNow')}</Text>
+          </Pressable>
+        )}
       </View>
     </Card>
   );
@@ -107,11 +124,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: 'transparent',
     elevation: 0,
-    marginBottom: 20,
+    marginBottom: 24,
     width: '100%',
   },
   imageContainer: {
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: 'hidden',
     width: '100%',
   },
@@ -136,17 +153,19 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 15,
-    fontWeight: '600',
   },
   desc: {
-    fontSize: 14,
+    fontFamily: fontFamily.sansRegular,
+    fontSize: 13,
     lineHeight: 18,
   },
   price: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fontFamily.sansExtraBold,
+    fontSize: 16,
     marginTop: 2,
+    fontVariant: ['tabular-nums'],
   },
   actionsRow: {
     flexDirection: 'row',
@@ -156,18 +175,18 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   addButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 8,
-    borderRadius: 10,
+    gap: 6,
+    marginTop: 10,
+    paddingVertical: 12,
+    borderRadius: 14,
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fontFamily.sansBold,
+    fontSize: 14,
   },
   iconGroup: {
     flexDirection: 'row',
@@ -183,19 +202,19 @@ const styles = StyleSheet.create({
     textAlign:"center",
     justifyContent:"center",
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 14,
   },
   iconButtonText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: '500',
   },
   deleteButton: {
     backgroundColor: 'rgba(239,68,68,0.08)',
   },
   deleteButtonText: {
+    fontFamily: fontFamily.sansSemiBold,
     fontSize: 13,
-    fontWeight: '500',
     color: '#ef4444',
   },
   buttonPressed: {

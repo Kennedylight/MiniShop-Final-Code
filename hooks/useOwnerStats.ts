@@ -85,7 +85,7 @@ export function useOwnerStats(uid?: string | null) {
         active += 1;
       }
 
-      const key = fmtDate((o as any).createdAt);
+      const key = fmtDate(o.createdAt);
       const cur = buckets.get(key) ?? { count: 0, revenue: 0 };
       cur.count += 1;
       if (o.status === "completed") cur.revenue += o.estimatedTotal || 0;
@@ -100,7 +100,7 @@ export function useOwnerStats(uid?: string | null) {
     // Tri explicite décroissant, car subscribeOwnerOrders (temps réel) ne garantit
     // pas le même ordre que listOwnerOrders côté web
     const sorted = [...orders].sort(
-      (a, b) => ((b as any).createdAt || 0) - ((a as any).createdAt || 0)
+      (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
     );
 
     return {

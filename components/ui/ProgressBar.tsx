@@ -1,4 +1,3 @@
-// components/ui/ProgressBar.tsx
 import { View, StyleSheet } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -8,34 +7,27 @@ export function ProgressBar({ value, max, tone = "primary" }: { value: number; m
   const { colors } = useTheme();
   const pct = max > 0 ? Math.min(value / max, 1) : 0;
 
-  const getToneColor = (): string => {
-    switch (tone) {
-      case "primary":
-        return colors.primary;
-      case "success":
-        return "#16a34a";
-      case "danger":
-        return "#ef4444";
-      default:
-        return colors.primary;
-    }
-  };
+  const toneColor = {
+    primary: colors.orange,
+    success: colors.success,
+    danger: colors.danger,
+  }[tone];
 
   return (
-    <View style={[styles.track, { backgroundColor: colors.border || "rgba(0,0,0,0.08)" }]}>
-      <View style={[styles.fill, { width: `${pct * 100}%`, backgroundColor: getToneColor() }]} />
+    <View style={[styles.track, { backgroundColor: colors.border }]}>
+      <View style={[styles.fill, { width: `${pct * 100}%`, backgroundColor: toneColor }]} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  track: { 
-    height: 6, 
-    borderRadius: 3, 
-    overflow: "hidden" 
+  track: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
   },
-  fill: { 
-    height: "100%", 
-    borderRadius: 3 
+  fill: {
+    height: "100%",
+    borderRadius: 4,
   },
 });

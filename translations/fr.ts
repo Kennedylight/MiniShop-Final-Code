@@ -60,9 +60,6 @@ export default {
       shopName: "Nom de la boutique",
       email: "Email",
       whatsapp: "Numéro WhatsApp",
-      currency: "Sélectionnez la devise de votre boutique.",
-      currencyLocked:
-        "Ce choix est définitif : la devise ne pourra plus être modifiée ensuite.",
       password: "Mot de passe",
       passwordPlaceholder: "••••••••",
       emailPlaceholder: "vous@exemple.com",
@@ -133,7 +130,7 @@ export default {
   },
   // fr.ts
   share: {
-    title: "Partagez votre boutique",
+    title: "Partagez",
     subtitle: "Envoyez ce lien où que soient vos clients",
     storeLink: "Lien de la boutique",
     loadingLink: "Chargement du lien...",
@@ -277,6 +274,7 @@ export default {
     specialNotes: "Notes spéciales",
     submitOrder: "Envoyer la commande",
     continueShopping: "Continuer vos achats",
+    orderNow: "Commander",
   },
   track: {
     notFoundTitle: "Commande introuvable",

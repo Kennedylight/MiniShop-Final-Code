@@ -57,8 +57,6 @@ export default {
       shopName: "Shop name",
       email: "Email",
       whatsapp: "WhatsApp number",
-      currency: "Select your store currency.",
-      currencyLocked: "This choice is final: the currency cannot be changed afterwards.",
       password: "Password",
       passwordPlaceholder: "••••••••",
       createAccount: "Create Account",
@@ -124,7 +122,7 @@ billing: {
 },
 // en.ts
 share: {
-  title: "Share your store",
+  title: "Share",
   subtitle: "Send this link anywhere your customers are",
   storeLink: "Store Link",
   loadingLink: "Loading store link...",
@@ -261,6 +259,7 @@ nav: {
     specialNotes: "Special notes",
     submitOrder: "Submit Order",
     continueShopping: "Continue Shopping",
+    orderNow: "Order now",
   },
   track: {
     notFoundTitle: "Order not found",

@@ -6,7 +6,14 @@ import { lightColors, darkColors } from '@/constants/colors';
 type ThemeMode = 'light' | 'dark' | 'system';
 const STORAGE_KEY = '@theme_mode';
 
-const ThemeContext = createContext<any>(null);
+type ThemeContextValue = {
+  mode: ThemeMode;
+  setMode: (m: ThemeMode) => void;
+  resolved: 'light' | 'dark';
+  colors: typeof lightColors;
+};
+
+const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
@@ -36,5 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
+  return ctx;
 }

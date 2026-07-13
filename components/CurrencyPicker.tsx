@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { COUNTRY_CODES, CountryCode } from '@/constants/countryCodes';
+import { fontFamily } from '@/constants/typography';
 
 type Props = {
   value?: string; // currency code, e.g. 'USD'
@@ -16,9 +18,10 @@ export function CurrencyPicker({ value, onChange, label = 'Your country / curren
 
   return (
     <View>
-      <Text style={[styles.label, { color: colors.muted }]}>{label}</Text>
+      {label !== '' && <Text style={[styles.label, { color: colors.muted }]}>{label}</Text>}
       <TouchableOpacity style={[styles.button, { borderColor: colors.border, backgroundColor: colors.card }]} onPress={() => setOpen(true)}>
         <Text style={[styles.buttonText, { color: colors.text }]}>{current.flag}  {current.name} — {current.currency}</Text>
+        <Ionicons name="chevron-down" size={16} color={colors.muted} />
       </TouchableOpacity>
 
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
@@ -49,17 +52,20 @@ export function CurrencyPicker({ value, onChange, label = 'Your country / curren
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, marginBottom: 6 },
+  label: { fontFamily: fontFamily.sansSemiBold, fontSize: 13, marginBottom: 8 },
   button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
   },
-  buttonText: { fontWeight: '700' },
+  buttonText: { fontFamily: fontFamily.sansBold, fontSize: 15 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '70%' },
-  sheetTitle: { fontWeight: '900', fontSize: 18, marginBottom: 12 },
-  optionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1 },
-  optionText: { fontSize: 15 },
-  optionCurrency: { fontWeight: '700' },
+  sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, maxHeight: '70%' },
+  sheetTitle: { fontFamily: fontFamily.displaySemiBold, fontSize: 19, marginBottom: 16 },
+  optionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 14, borderBottomWidth: 1 },
+  optionText: { fontFamily: fontFamily.sansMedium, fontSize: 15 },
+  optionCurrency: { fontFamily: fontFamily.sansBold, fontSize: 14 },
 });

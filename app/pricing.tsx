@@ -13,6 +13,7 @@ import { PricingCard } from "@/components/PricingCard";
 import { createCheckoutSession } from "@/services/subscriptionService";
 import { PlanId } from "@/constants/plans";
 import { useTheme } from "@/context/ThemeContext";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function Pricing() {
   const { colors } = useTheme();
@@ -21,8 +22,8 @@ export default function Pricing() {
     try {
       const url = await createCheckoutSession(plan);
       await Linking.openURL(url);
-    } catch (e: any) {
-      Alert.alert("Billing error", e.message);
+    } catch (e) {
+      Alert.alert("Billing error", getErrorMessage(e));
     }
   };
 

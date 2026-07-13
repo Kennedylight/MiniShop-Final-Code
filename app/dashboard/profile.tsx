@@ -4,6 +4,7 @@ import { Alert, Text, View, StyleSheet, Modal, Pressable } from 'react-native';
 import { auth, db } from '@/services/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Screen } from '@/components/Screen';
+import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { LanguagePicker } from '@/components/LanguagePicker';
@@ -12,12 +13,13 @@ import { setOwnerCurrencyOnce } from '@/services/authService';
 import { fixLegacyCurrency } from '@/services/currencyMigrationService';
 import { DEFAULT_CURRENCY } from '@/constants/currency';
 import { useTheme } from '@/context/ThemeContext';
+import { fontFamily } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
 
 const THEME_OPTIONS = [
-  { key: 'light', label: 'Clair' },
-  { key: 'dark', label: 'Sombre' },
-  { key: 'system', label: 'Système' },
+  { key: 'light', label: 'Clair', icon: 'sunny-outline' as const },
+  { key: 'dark', label: 'Sombre', icon: 'moon-outline' as const },
+  { key: 'system', label: 'Système', icon: 'phone-portrait-outline' as const },
 ] as const;
 
 export default function Profile() {
@@ -98,19 +100,27 @@ export default function Profile() {
   };
 
   return (
-    <Screen>
+    <Screen topInset={false}>
       <Text style={[styles.title, { color: colors.text }]}>{t('profile.title')}</Text>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.title')}</Text>
-        <Button title={t('profile.save')} onPress={() => setProfileModalVisible(true)} />
-      </View>
+      <Pressable onPress={() => setProfileModalVisible(true)}>
+        <Card style={[styles.card, styles.editRow, { shadowColor: colors.shadow }]}>
+          <View style={[styles.editIconWrap, { backgroundColor: colors.orangeSoft }]}>
+            <Ionicons name="storefront-outline" size={18} color={colors.orange} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: colors.text }]}>{t('profile.title')}</Text>
+            <Text style={[styles.rowSubtitle, { color: colors.muted }]}>{t('profile.save')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+        </Card>
+      </Pressable>
 
-      <View style={styles.section}>
+      <Card style={[styles.card, { shadowColor: colors.shadow }]}>
         <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.currency')}</Text>
         {currency ? (
           <>
-            <View style={[styles.currencyLockedRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+            <View style={[styles.currencyLockedRow, { borderColor: colors.border, backgroundColor: colors.bg }]}>
               <Ionicons name="lock-closed" size={16} color={colors.muted} />
               <Text style={[styles.currencyLockedText, { color: colors.text }]}>{currency}</Text>
             </View>
@@ -119,13 +129,14 @@ export default function Profile() {
             </Text>
             <Button
               title={t('profile.fixLegacyAction')}
+              variant="outline"
               onPress={confirmFixLegacy}
               loading={fixingLegacy}
             />
           </>
         ) : (
           <>
-            <CurrencyPicker value={pendingCurrency} onChange={setPendingCurrency} />
+            <CurrencyPicker value={pendingCurrency} onChange={setPendingCurrency} label="" />
             <Text style={[styles.currencyHint, { color: colors.muted }]}>
               {t('profile.currencyHint')}
             </Text>
@@ -136,33 +147,37 @@ export default function Profile() {
             />
           </>
         )}
-      </View>
+      </Card>
 
-      <View style={styles.section}>
+      <Card style={[styles.card, { shadowColor: colors.shadow }]}>
         <Text style={[styles.sectionLabel, { color: colors.text }]}>Thème</Text>
         <View style={styles.themeRow}>
-          {THEME_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.key}
-              onPress={() => setMode(opt.key)}
-              style={[
-                styles.themeOption,
-                { borderColor: colors.border },
-                mode === opt.key && { backgroundColor: colors.primary, borderColor: colors.primary },
-              ]}
-            >
-              <Text style={{ color: mode === opt.key ? '#fff' : colors.text }}>
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
+          {THEME_OPTIONS.map((opt) => {
+            const active = mode === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => setMode(opt.key)}
+                style={[
+                  styles.themeOption,
+                  { borderColor: colors.border, backgroundColor: colors.bg },
+                  active && { backgroundColor: colors.orange, borderColor: colors.orange },
+                ]}
+              >
+                <Ionicons name={opt.icon} size={16} color={active ? '#fff' : colors.muted} />
+                <Text style={[styles.themeOptionText, { color: active ? '#fff' : colors.text }]}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.section}>
+      <Card style={[styles.card, { shadowColor: colors.shadow }]}>
         <Text style={[styles.sectionLabel, { color: colors.text }]}>{t('profile.language')}</Text>
         <LanguagePicker />
-      </View>
+      </Card>
 
       <Modal
         visible={profileModalVisible}
@@ -211,15 +226,23 @@ function ProfileEditForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Screen>
-     <Pressable onPress={onClose} style={styles.closeButton}>
-  <Ionicons name="close" size={28} color={colors.text} />
-</Pressable>
+      <Pressable onPress={onClose} style={[styles.closeButton, { backgroundColor: colors.card }]} hitSlop={8}>
+        <Ionicons name="close" size={22} color={colors.text} />
+      </Pressable>
       <Text style={[styles.title, { color: colors.text }]}>{t('profile.title')}</Text>
 
-      <Input placeholder={t('profile.shopName')} value={shopName} onChangeText={setShopName} />
-      <Input placeholder={t('profile.whatsapp')} value={whatsapp} onChangeText={setWhatsapp} />
-      <Input placeholder={t('profile.description')} value={description} onChangeText={setDescription} multiline />
-      <Input placeholder={t('profile.delivery')} value={delivery} onChangeText={setDelivery} multiline />
+      <View style={styles.formField}>
+        <Input label={t('profile.shopName')} value={shopName} onChangeText={setShopName} />
+      </View>
+      <View style={styles.formField}>
+        <Input label={t('profile.whatsapp')} value={whatsapp} onChangeText={setWhatsapp} />
+      </View>
+      <View style={styles.formField}>
+        <Input label={t('profile.description')} value={description} onChangeText={setDescription} multiline />
+      </View>
+      <View style={styles.formField}>
+        <Input label={t('profile.delivery')} value={delivery} onChangeText={setDelivery} multiline />
+      </View>
 
       <Button title={t('profile.save')} onPress={save} />
     </Screen>
@@ -227,20 +250,52 @@ function ProfileEditForm({ onClose }: { onClose: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 32, fontWeight: '900' },
-  section: { marginTop: 24, marginBottom: 8 },
-  sectionLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  title: { fontFamily: fontFamily.displaySemiBold, fontSize: 32, marginBottom: 20 },
+  card: {
+    marginBottom: 16,
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
+  },
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  editIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowTitle: { fontFamily: fontFamily.sansBold, fontSize: 15 },
+  rowSubtitle: { fontFamily: fontFamily.sansRegular, fontSize: 12, marginTop: 2 },
+  sectionLabel: { fontFamily: fontFamily.sansSemiBold, fontSize: 13, marginBottom: 12 },
   themeRow: { flexDirection: 'row', gap: 8 },
   themeOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     borderWidth: 1,
   },
+  themeOptionText: {
+    fontFamily: fontFamily.sansSemiBold,
+    fontSize: 13,
+  },
   closeButton: {
-  alignSelf: 'flex-end',
-  padding: 8,
-},
+    alignSelf: 'flex-end',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   currencyLockedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -250,12 +305,16 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   currencyLockedText: {
+    fontFamily: fontFamily.sansBold,
     fontSize: 15,
-    fontWeight: '700',
   },
   currencyHint: {
+    fontFamily: fontFamily.sansRegular,
     fontSize: 12,
-    marginTop: 6,
-    marginBottom: 12,
+    marginTop: 8,
+    marginBottom: 14,
+  },
+  formField: {
+    marginBottom: 16,
   },
 });
